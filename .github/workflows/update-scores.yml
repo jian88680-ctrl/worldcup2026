@@ -1,0 +1,36 @@
+name: Update World Cup Scores
+
+on:
+  schedule:
+    # 每30分钟更新一次（世界杯期间可缩短到5分钟）
+    - cron: '*/30 * * * *'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  update-scores:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch latest scores
+        env:
+          WC2026_API_KEY: ${{ secrets.WC2026_API_KEY }}
+        run: |
+          echo "Fetching scores..."
+          # 如果配置了API Key，调用真实API
+          if [ -n "$WC2026_API_KEY" ]; then
+            curl -s -H "Authorization: $WC2026_API_KEY" \
+              "https://api.wc2026api.com/matches" \
+              -o scores.json
+          else
+            echo "{}" > scores.json
+          fi
+
+      - name: Upload scores file
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add scores.json
+          git diff --staged --quiet || git commit -m "Update scores $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          git push

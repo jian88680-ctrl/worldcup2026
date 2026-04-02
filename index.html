@@ -869,20 +869,7 @@
   </div>
 
   <div class="bracket-section" id="bracketSection">
-    <!-- Upper Half -->
-    <div class="bracket-half" id="bracket-upper">
-      <div class="bracket-half-label">🌐 上半区 <span style="font-size:0.68rem;color:#556;font-weight:400">(A–H 组晋级)</span></div>
-      <div class="bracket-half-inner">
-        <div id="bracket-upper-container"></div>
-      </div>
-    </div>
-    <!-- Lower Half -->
-    <div class="bracket-half" id="bracket-lower">
-      <div class="bracket-half-label">🌑 下半区 <span style="font-size:0.68rem;color:#556;font-weight:400">(I–L 组晋级)</span></div>
-      <div class="bracket-half-inner">
-        <div id="bracket-lower-container"></div>
-      </div>
-    </div>
+    <div id="bracketClassic"></div>
   </div>
 
   <div class="bracket-note">
@@ -1378,38 +1365,196 @@ function buildBracketRow(round, koSide) {
   return html;
 }
 
-function renderBracketHalf(containerId, rounds) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  let html = '';
-  rounds.forEach((round, ri) => {
-    round._ri = ri;
-    html += buildBracketRow(round, containerId.includes('upper') ? 'upper' : 'lower');
-    if (ri < rounds.length - 1) {
-      html += `<div class="bracket-connector">
-        <div class="bracket-connector-line"></div>
-        <span class="bracket-connector-arrow">▶</span>
-        <div class="bracket-connector-line"></div>
-      </div>`;
-    }
-  });
-
-  html += `<div class="bracket-connector"><span style="color:#fdbb2d;font-size:1.1rem">▶</span></div>`;
-  html += `<div class="bracket-final-wrap">
-    <div style="font-size:0.7rem;color:#8a9bb5;margin-bottom:6px;font-weight:700;text-align:center;">🏆 冠军</div>
-    <div class="bracket-champion">
-      <div class="trophy">🏆</div>
-      <div class="champ-label">2026 世界杯冠军</div>
-      <div class="champ-team" style="color:#fdbb2d88;font-style:italic">待定</div>
-    </div>
-  </div>`;
-
-  container.innerHTML = `<div class="bracket-row">${html}</div>`;
-}
-
 function renderBracket() {
-  renderBracketHalf('bracket-upper-container', KO_UPPER);
-  renderBracketHalf('bracket-lower-container', KO_LOWER);
+  const container = document.getElementById('bracketClassic');
+  if (!container) return;
+
+  // 经典对称结构：左边上半区 → 中间决赛 → 右边下半区
+  const html = `
+<div style="display:flex;align-items:center;gap:0;min-width:1100px;">
+
+  <!-- ===== 左侧：上半区 ===== -->
+  <div style="display:flex;align-items:center;gap:0;">
+
+    <!-- 32强赛 (4场) -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#fdbb2d">⚔️ 32强赛</div>
+      <div class="bracket-matches-col" style="gap:6px;padding-top:0;">
+        ${KO_UPPER[0].matches.map((m, i) => `<div class="bracket-match-card" style="min-width:100px;">
+          <div class="match-id"><span>M${49+i}</span></div>
+          <div class="team-line${m.home.includes('胜者')?' tbd':''}"><span class="flag">${m.homeFlag||'🏳️'}</span><span class="name">${m.home}</span><span class="score">-</span></div>
+          <div class="team-line${m.away.includes('胜者')?' tbd':''}"><span class="flag">${m.awayFlag||'🏳️'}</span><span class="name">${m.away}</span><span class="score">-</span></div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 连接线 -->
+    <div style="width:16px;position:relative;">
+      <div style="position:absolute;top:12%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:25%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:37%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:50%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:62%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:75%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:88%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:25%;right:0;height:50%;border-left:1.5px solid rgba(255,255,255,0.2);"></div>
+    </div>
+
+    <!-- 16强赛 (2场) -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#6dd5ed">🎯 16强</div>
+      <div class="bracket-matches-col" style="gap:20px;padding-top:20%;">
+        <div class="bracket-match-card" style="min-width:110px;">
+          <div class="match-id"><span>57</span><span>洛杉矶</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强1胜</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强2胜</span><span class="score">-</span></div>
+        </div>
+        <div class="bracket-match-card" style="min-width:110px;">
+          <div class="match-id"><span>58</span><span>洛杉矶</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强3胜</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强4胜</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 连接线 -->
+    <div style="width:16px;position:relative;">
+      <div style="position:absolute;top:33%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.25);"></div>
+      <div style="position:absolute;top:50%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.25);"></div>
+      <div style="position:absolute;top:66%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.25);"></div>
+      <div style="position:absolute;top:50%;right:0;height:33%;border-left:1.5px solid rgba(255,255,255,0.25);"></div>
+    </div>
+
+    <!-- 1/4决赛 (1场) -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#ff9a56">🏅 1/4决赛</div>
+      <div class="bracket-matches-col" style="gap:30px;padding-top:33%;">
+        <div class="bracket-match-card" style="min-width:115px;">
+          <div class="match-id"><span>59</span><span>纽约</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强1胜</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强2胜</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 连接线 -->
+    <div style="width:16px;position:relative;">
+      <div style="position:absolute;top:50%;left:0;right:0;border-top:2px solid rgba(253,187,45,0.4);"></div>
+    </div>
+
+    <!-- 半决赛上半区 -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#ff6b6b">🔥 半决赛</div>
+      <div class="bracket-matches-col" style="gap:30px;padding-top:42%;">
+        <div class="bracket-match-card" style="min-width:120px;border-color:rgba(255,107,107,0.4);">
+          <div class="match-id"><span>61</span><span>纽约</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">1/4上半区胜</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">待定</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 中间：决赛 ===== -->
+  <div style="display:flex;flex-direction:column;align-items:center;padding:0 8px;">
+    <div style="height:42%;width:24px;border-right:2px solid rgba(253,187,45,0.5);"></div>
+    <div class="bracket-final-card" style="min-width:140px;margin:0 12px;">
+      <div class="final-label">🏆 决赛</div>
+      <div class="final-date">7月19日</div>
+      <div class="final-date" style="font-size:0.7rem;color:#fdbb2d;">纽约大都会</div>
+      <div class="team-line tbd" style="margin-top:8px;"><span class="flag">🏳️</span><span class="name">上半区胜者</span><span class="score">-</span></div>
+      <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">下半区胜者</span><span class="score">-</span></div>
+    </div>
+    <div style="height:42%;width:24px;border-right:2px solid rgba(253,187,45,0.5);"></div>
+  </div>
+
+  <!-- ===== 右侧：下半区 ===== -->
+  <div style="display:flex;align-items:center;gap:0;">
+
+    <!-- 半决赛下半区 -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#ff6b6b">🔥 半决赛</div>
+      <div class="bracket-matches-col" style="gap:30px;padding-top:42%;">
+        <div class="bracket-match-card" style="min-width:120px;border-color:rgba(255,107,107,0.4);">
+          <div class="match-id"><span>62</span><span>洛杉矶</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">待定</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">1/4下半区胜</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 连接线 -->
+    <div style="width:16px;position:relative;">
+      <div style="position:absolute;top:50%;left:0;right:0;border-top:2px solid rgba(253,187,45,0.4);"></div>
+    </div>
+
+    <!-- 1/4决赛 (1场) -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#ff9a56">🏅 1/4决赛</div>
+      <div class="bracket-matches-col" style="gap:30px;padding-top:33%;">
+        <div class="bracket-match-card" style="min-width:115px;">
+          <div class="match-id"><span>60</span><span>达拉斯</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强3胜</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强4胜</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 连接线 -->
+    <div style="width:16px;position:relative;">
+      <div style="position:absolute;top:17%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.25);"></div>
+      <div style="position:absolute;top:50%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.25);"></div>
+      <div style="position:absolute;top:33%;left:0;height:33%;border-left:1.5px solid rgba(255,255,255,0.25);"></div>
+    </div>
+
+    <!-- 16强赛 (2场) -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#6dd5ed">🎯 16强</div>
+      <div class="bracket-matches-col" style="gap:20px;padding-top:20%;">
+        <div class="bracket-match-card" style="min-width:110px;">
+          <div class="match-id"><span>63</span><span>迈阿密</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强5胜</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强6胜</span><span class="score">-</span></div>
+        </div>
+        <div class="bracket-match-card" style="min-width:110px;">
+          <div class="match-id"><span>64</span><span>迈阿密</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强7胜</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强8胜</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 连接线 -->
+    <div style="width:16px;position:relative;">
+      <div style="position:absolute;top:12%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:25%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:37%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:50%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:62%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:75%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:88%;left:0;right:0;border-top:1.5px solid rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute;top:50%;left:0;height:50%;border-left:1.5px solid rgba(255,255,255,0.2);"></div>
+    </div>
+
+    <!-- 32强赛 (4场) -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title" style="color:#fdbb2d">⚔️ 32强赛</div>
+      <div class="bracket-matches-col" style="gap:6px;padding-top:0;">
+        ${KO_LOWER[0].matches.map((m, i) => `<div class="bracket-match-card" style="min-width:100px;">
+          <div class="match-id"><span>M${57+i}</span></div>
+          <div class="team-line${m.home.includes('胜者')?' tbd':''}"><span class="flag">${m.homeFlag||'🏳️'}</span><span class="name">${m.home}</span><span class="score">-</span></div>
+          <div class="team-line${m.away.includes('胜者')?' tbd':''}"><span class="flag">${m.awayFlag||'🏳️'}</span><span class="name">${m.away}</span><span class="score">-</span></div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+  `;
+
+  container.innerHTML = html;
 }
 
 // ===== BRACKET ZOOM =====

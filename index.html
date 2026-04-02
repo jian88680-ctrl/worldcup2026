@@ -965,6 +965,68 @@ const CONFIG = {
   CACHE_DURATION: 300000        // 5分钟缓存
 };
 
+// ===== 多数据源配置 =====
+const DATA_SOURCES = [
+  {
+    name: 'wc2026api',
+    url: 'https://api.wc2026api.com/v1/matches',
+    type: 'api',
+    key: 'WC2026_API_KEY',
+    headers: (key) => ({ 'Authorization': `Bearer ${key}` }),
+    parse: (data) => ({ scores: data, knockout: {} })
+  },
+  {
+    name: 'wc2026-access',
+    url: 'https://zh-wc2026-access.com/api/v1/matches',
+    type: 'api',
+    key: 'WC2026_ACCESS_KEY',
+    headers: (key) => ({ 'Authorization': `Bearer ${key}` }),
+    parse: (data) => ({ scores: data, knockout: {} })
+  },
+  {
+    name: 'openfootball',
+    url: 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/worldcup-2026.json',
+    type: 'json',
+    parse: parseOpenFootballData
+  },
+  {
+    name: 'github-raw',
+    url: '',  // 用户可配置的GitHub数据源
+    type: 'github',
+    parse: (data) => ({ scores: data.scores || data, knockout: data.knockout || {} })
+  }
+];
+
+// OpenFootball 数据格式解析
+function parseOpenFootballData(data) {
+  if (!data || !data.matches) return null;
+  const scores = {};
+  const knockout = {};
+  
+  data.matches.forEach(match => {
+    const homeTeam = match.team1 || match.home;
+    const awayTeam = match.team2 || match.away;
+    const score = match.score || {};
+    
+    // 查找匹配的本地比赛
+    const localMatch = MATCHES.find(m => 
+      (m.home.includes(homeTeam) || homeTeam.includes(m.home)) &&
+      (m.away.includes(awayTeam) || awayTeam.includes(m.away))
+    );
+    
+    if (localMatch) {
+      scores[localMatch.id] = {
+        home: score.ft?.[0] ?? score.home,
+        away: score.ft?.[1] ?? score.away,
+        status: match.score?.et || match.score?.p ? 'finished' : 'pending',
+        minute: 0
+      };
+    }
+  });
+  
+  return { scores, knockout };
+}
+
 // ===== API 请求频率控制 =====
 const ApiRateLimiter = {
   _dailyRequests: 0,
@@ -1419,29 +1481,74 @@ async function fetchScores() {
     return;
   }
 
-  if (CONFIG.WC2026_API_KEY) {
+  // 按顺序尝试多个数据源
+  for (const source of DATA_SOURCES) {
     try {
-      const resp = await fetch('https://api.wc2026api.com/v1/matches', {
-        headers: { 'Authorization': `Bearer ${CONFIG.WC2026_API_KEY}` }
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        ApiRateLimiter.incrementCount();
+      let data = null;
+      let success = false;
+
+      // API类型数据源
+      if (source.type === 'api') {
+        const apiKey = source.key === 'WC2026_API_KEY' ? CONFIG.WC2026_API_KEY : CONFIG[source.key];
+        if (!apiKey) continue;
+        
+        const resp = await fetch(source.url, {
+          headers: source.headers(apiKey)
+        });
+        if (resp.ok) {
+          data = await resp.json();
+          success = true;
+          // 只有主API才计入限额
+          if (source.name === 'wc2026api') {
+            ApiRateLimiter.incrementCount();
+          }
+        }
+      }
+      
+      // JSON类型（GitHub开源数据）
+      else if (source.type === 'json') {
+        const resp = await fetch(source.url);
+        if (resp.ok) {
+          data = await resp.json();
+          const parsed = source.parse(data);
+          if (parsed) {
+            data = parsed;
+            success = true;
+          }
+        }
+      }
+      
+      // GitHub Raw URL
+      else if (source.type === 'github' && CONFIG.GITHUB_RAW_URL) {
+        const resp = await fetch(CONFIG.GITHUB_RAW_URL);
+        if (resp.ok) {
+          data = await resp.json();
+          const parsed = source.parse(data);
+          if (parsed) {
+            data = parsed;
+            success = true;
+          }
+        }
+      }
+
+      if (success && data) {
+        currentDataSource = source.name;
         ApiRateLimiter.setCache('matches', data);
         processApiData(data);
         updateUI();
         updateApiStatus();
+        console.log(`✅ 数据来源: ${source.name}`);
         return;
       }
-    } catch(e) { console.warn('API fetch failed', e); }
+    } catch(e) {
+      console.warn(`❌ 数据源 ${source.name} 获取失败:`, e);
+    }
   }
-  if (CONFIG.GITHUB_RAW_URL) {
-    try {
-      const resp = await fetch(CONFIG.GITHUB_RAW_URL);
-      if (resp.ok) { processApiData(await resp.json()); updateUI(); return; }
-    } catch(e) {}
-  }
-  useDemoData(); updateUI();
+
+  // 所有数据源都失败，使用演示数据
+  console.warn('⚠️ 所有数据源均不可用，使用本地演示数据');
+  useDemoData();
+  updateUI();
 }
 
 // 更新API状态显示
@@ -1899,6 +2006,74 @@ function init() {
   renderBracket();
   fetchScores();
   setInterval(fetchScores, CONFIG.REFRESH_INTERVAL);
+  
+  // 自动滚动到当天日期
+  scrollToToday();
+}
+
+// 自动滚动到当天比赛位置
+function scrollToToday() {
+  const today = new Date();
+  const todayMonth = today.getMonth() + 1;  // JS月份从0开始
+  const todayDay = today.getDate();
+  
+  // 转换格式为 "6月12日" 这种格式
+  const todayStr = `${todayMonth}月${todayDay}日`;
+  
+  // 查找当前显示的标签页
+  const activeTab = document.querySelector('.tab-btn.active');
+  const isDateView = activeTab && activeTab.dataset.tab === 'date';
+  
+  // 获取对应的tbody
+  const tbodyId = isDateView ? 'schedule-date-tbody' : 'schedule-group-tbody';
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  
+  // 查找今天的日期行
+  const rows = tbody.querySelectorAll('tr');
+  let targetRow = null;
+  
+  for (const row of rows) {
+    if (row.classList.contains('date-group-header')) {
+      // 检查这行是否包含今天
+      const text = row.textContent;
+      if (text.includes(todayStr)) {
+        targetRow = row;
+        break;
+      }
+    }
+  }
+  
+  // 如果找到今天的行，滚动到该位置
+  if (targetRow) {
+    setTimeout(() => {
+      targetRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);  // 延迟一下确保DOM已渲染
+  } else {
+    // 如果今天没有比赛，查找最近的未来比赛
+    const futureDate = today.toISOString().split('T')[0].replace(/-/g, '').replace(/^(\d{4})(\d{2})(\d{2})$/, '$2$3');
+    const pastDate = parseInt(futureDate) - 100;  // 昨天的日期格式
+    
+    for (const row of rows) {
+      if (row.classList.contains('date-group-header')) {
+        const text = row.textContent;
+        const match = text.match(/(\d+)月(\d+)日/);
+        if (match) {
+          const monthDay = parseInt(match[1] + match[2]);
+          if (monthDay >= parseInt(futureDate.slice(-4))) {
+            targetRow = row;
+            break;
+          }
+        }
+      }
+    }
+    
+    if (targetRow) {
+      setTimeout(() => {
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }
 }
 
 init();

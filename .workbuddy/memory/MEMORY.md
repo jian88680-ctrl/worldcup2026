@@ -2,16 +2,31 @@
 
 ## 2026世界杯赛程对阵图项目
 
-- **项目路径**: `C:\Users\江苏万茂\WorkBuddy\20260331112545\worldcup2026.html`
+- **项目路径**: `C:\Users\江苏万茂\WorkBuddy\20260331112545\index.html`（GitHub Pages默认文件）
 - **CloudBase 环境**: `worldcup2026-4g0hh6uz451bff14`（状态正常）
 - **GitHub 账号**: 邮箱 `jian88680@gmail.com`，**用户名 `jian88680-ctrl`**
 - **GitHub 仓库**: `https://github.com/jian88680-ctrl/worldcup2026`（已创建）
-- **本地 Git 提交**: 已完成（5 files, 1189 insertions，commit: fa1c2ee）
+- **本地 Git 提交**: 已完成（commit: 8d46331）
 - **远程 URL**: 已配置为 `https://github.com/jian88680-ctrl/worldcup2026.git`
-- **推送状态**: ✅ 已完成推送（2026-04-02，使用 Token ghp_qPqG5...，强制推送成功）
+- **推送状态**: ✅ 已完成推送（2026-04-02，使用 Token ghp_qPqG5...）
 - **VPN 代理**: v2rayN，本地代理端口 `10808`，Git 代理已配置
-- **比分 API**: wc2026api.com（已申请 API Key，待整合）
+- **比分 API**: wc2026api.com
+  - **API Key**: `wc26_3oEb6vWz95cB3oJU7F669M`（已内置）
+  - **每日限制**: 100次请求/天
+  - **刷新间隔**: 5分钟（节省额度）
+  - **缓存机制**: 本地5分钟缓存
 - **GitHub Pages 地址**: `https://jian88680-ctrl.github.io/worldcup2026`（已启用）
+- **v4.1 更新（2026-04-02 17:55）**: ✅
+  - 多数据源备份：wc2026api.com主源 + zh-wc2026-access.com备用 + OpenFootball开源 + GitHub Raw
+  - 自动切换：依次尝试各数据源，失败自动切换下一个，确保数据真实可靠
+  - 自动定位：打开页面自动滚动到当天日期位置
+- **v4.0 更新（2026-04-02 16:20）**: ✅
+  - 完整比赛数据：6月28日后32强赛(R49-R72)/16强赛(R73-R88)/8强赛(R89-R96)/半决赛(R97-R100)/季军赛(R101-R102)/决赛(R103-R104)
+  - 内置API Key，自动获取实时数据
+  - API请求频率控制（每天100次限制+5分钟缓存）
+  - 自动更新：小组赛结束后自动更新淘汰赛对阵（updateKoFromStandings函数）
+  - 手机适配：移除复杂缩放，改为全屏查看功能
+  - 对阵图动态渲染：根据koResults自动显示比分和队伍
 - **v3.2 更新（2026-04-02 下午）**: ✅ PWA离线缓存 - manifest.json配置、sw.js Service Worker（缓存优先策略）、离线提示Toast、更新提示功能
 - **v3.1 更新（2026-04-02）**: 全面手机适配：浮动底部导航栏、iPhone刘海屏safe-area支持、小组卡单列布局、表格横向滑动、触摸优化、缩小字体和间距
 - **v3.0 更新（2026-04-02）**: 国旗emoji全48队、📊小组积分榜（胜平负进失净积分）、日期加星期几、淘汰赛改为上下半区对阵图（可缩放0.5x~2x）、wc2026api.com实时比分API集成

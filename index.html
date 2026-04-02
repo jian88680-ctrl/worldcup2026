@@ -280,46 +280,55 @@
   .bracket-section { display: flex; flex-direction: column; gap: 24px; }
 
   /* ===== 改良后的淘汰赛对阵图样式 ===== */
+  /* ===== 简化后的对阵图缩放控制 ===== */
   .bracket-zoom-controls {
     display: flex;
     align-items: center;
-    gap: 6px;
-    justify-content: flex-end;
-    margin-bottom: 8px;
+    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .bracket-zoom-controls .hint {
+    font-size: 0.72rem;
+    color: #556;
   }
   .zoom-btn {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #aab;
+    background: rgba(58,159,224,0.15);
+    border: 1px solid rgba(58,159,224,0.3);
+    color: #3a9fe0;
     border-radius: 6px;
-    width: 34px;
-    height: 34px;
+    padding: 6px 12px;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 0.75rem;
     font-family: inherit;
     transition: all 0.2s;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 4px;
     touch-action: manipulation;
   }
-  .zoom-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
-  .zoom-btn:active { transform: scale(0.9); }
-  .zoom-level { font-size: 0.75rem; color: #556; min-width: 38px; text-align: center; }
-  .bracket-zoom-wrap {
-    overflow: auto;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    background: rgba(0,0,0,0.2);
-    padding: 16px;
-    cursor: grab;
-    -webkit-overflow-scrolling: touch;
+  .zoom-btn:hover { background: rgba(58,159,224,0.25); }
+  .zoom-btn:active { transform: scale(0.95); }
+
+  /* ===== 手机端简化样式 ===== */
+  .bracket-mobile-hint {
+    display: none;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #556;
+    padding: 8px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    margin-bottom: 8px;
   }
-  .bracket-zoom-wrap:active { cursor: grabbing; }
-  .bracket-zoom-inner {
-    transform-origin: top left;
-    transition: transform 0.15s ease;
-    min-width: max-content;
+  @media (max-width: 767px) {
+    .bracket-zoom-controls { justify-content: center; }
+    .bracket-zoom-controls .hint { display: none; }
+    .bracket-mobile-hint { display: block; }
   }
 
   /* ===== 对阵图容器 ===== */
@@ -909,17 +918,23 @@
 
   <!-- API Config -->
   <div class="api-config-bar" id="apiConfigBar">
-    🌐 <strong>实时比分 API</strong>：填写 API Key 后自动获取 live 数据
-    &nbsp;<input type="password" class="api-input" id="apiKeyInput" placeholder="填入 wc2026api.com Key">
-    <button class="api-apply-btn" onclick="applyApiKey()">应用</button>
-    &nbsp;|&nbsp;<a href="https://wc2026api.com" target="_blank">申请 API Key →</a>
+    🌐 <strong>实时比分 API</strong>：已内置 API Key，自动获取数据
+    <span id="apiQuotaInfo" style="margin-left:8px;font-size:0.72rem;color:#556;"></span>
   </div>
 
+  <!-- 手机端提示 -->
+  <div class="bracket-mobile-hint">👆 左右滑动查看完整对阵图</div>
+
+  <!-- 简化后的控制栏 -->
   <div class="bracket-zoom-controls">
-    <button class="zoom-btn" onclick="zoomBracket(-0.1)" title="缩小">−</button>
-    <span class="zoom-level" id="zoomLevel">100%</span>
-    <button class="zoom-btn" onclick="zoomBracket(0.1)" title="放大">+</button>
-    <button class="zoom-btn" onclick="zoomBracket(0)" title="重置" style="font-size:0.75rem">⟳</button>
+    <span class="hint">📱 手机端左右滑动查看 · 点击放大查看大图</span>
+    <button class="zoom-btn" onclick="openBracketFullscreen()" title="全屏查看">🔍 全屏</button>
+  </div>
+
+  <!-- 全屏对阵图模态框 -->
+  <div id="bracketModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;overflow:auto;">
+    <button onclick="closeBracketModal()" style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85rem;z-index:1001;">✕ 关闭</button>
+    <div id="bracketModalContent" style="padding:20px;min-width:1100px;margin:0 auto;"></div>
   </div>
 
   <div class="bracket-wrapper">
@@ -942,10 +957,75 @@
 <script>
 // ===== CONFIG =====
 const CONFIG = {
-  WC2026_API_KEY: '',
+  WC2026_API_KEY: 'wc26_3oEb6vWz95cB3oJU7F669M',  // 内置API Key
   GITHUB_RAW_URL: '',
-  REFRESH_INTERVAL: 30000,
-  USE_DEMO: true
+  REFRESH_INTERVAL: 300000,    // 5分钟刷新一次（节省API额度）
+  USE_DEMO: false,              // 默认使用API
+  DAILY_LIMIT: 100,            // 每日API请求限制
+  CACHE_DURATION: 300000        // 5分钟缓存
+};
+
+// ===== API 请求频率控制 =====
+const ApiRateLimiter = {
+  _dailyRequests: 0,
+  _lastResetDate: null,
+  _cache: {},
+
+  // 检查并重置每日计数
+  checkDailyReset() {
+    const today = new Date().toDateString();
+    if (this._lastResetDate !== today) {
+      this._dailyRequests = 0;
+      this._lastResetDate = today;
+      localStorage.setItem('wc2026_daily_requests', '0');
+      localStorage.setItem('wc2026_last_date', today);
+    }
+  },
+
+  // 获取今日请求数
+  getDailyCount() {
+    this.checkDailyReset();
+    return parseInt(localStorage.getItem('wc2026_daily_requests') || '0', 10);
+  },
+
+  // 增加请求计数
+  incrementCount() {
+    this.checkDailyReset();
+    const count = this.getDailyCount() + 1;
+    localStorage.setItem('wc2026_daily_requests', count.toString());
+    this._dailyRequests = count;
+    return count;
+  },
+
+  // 检查是否可以请求
+  canRequest() {
+    this.checkDailyReset();
+    const count = this.getDailyCount();
+    if (count >= CONFIG.DAILY_LIMIT) {
+      console.warn(`API请求已达每日限制（${CONFIG.DAILY_LIMIT}次/天）`);
+      return false;
+    }
+    return true;
+  },
+
+  // 缓存获取
+  getCache(key) {
+    const cached = this._cache[key];
+    if (cached && Date.now() - cached.timestamp < CONFIG.CACHE_DURATION) {
+      return cached.data;
+    }
+    return null;
+  },
+
+  // 缓存设置
+  setCache(key, data) {
+    this._cache[key] = { data, timestamp: Date.now() };
+  },
+
+  // 获取剩余请求次数
+  getRemaining() {
+    return Math.max(0, CONFIG.DAILY_LIMIT - this.getDailyCount());
+  }
 };
 
 // ===== COUNTRY FLAGS =====
@@ -1040,46 +1120,173 @@ const MATCHES = [
   {id:'K6',sortKey:202606280730,date:'6月28日',weekday:'周日',dateNum:20260628,time:'07:30',group:'K',home:'乌兹别克',away:'民主刚果',venue:'亚特兰大'},
   {id:'L5',sortKey:202606280500,date:'6月28日',weekday:'周日',dateNum:20260628,time:'05:00',group:'L',home:'巴拿马',away:'英格兰',venue:'纽约'},
   {id:'L6',sortKey:202606280500,date:'6月28日',weekday:'周日',dateNum:20260628,time:'05:00',group:'L',home:'克罗地亚',away:'加纳',venue:'费城'},
+
+  // ===== 32强赛 6月29日-7月4日 =====
+  {id:'R49',sortKey:202606290300,date:'6月29日',weekday:'周一',dateNum:20260629,time:'03:00',group:'R32',home:'A1',away:'B3',venue:'洛杉矶'},
+  {id:'R50',sortKey:202606290700,date:'6月29日',weekday:'周一',dateNum:20260629,time:'07:00',group:'R32',home:'C1',away:'D3',venue:'纽约'},
+  {id:'R51',sortKey:202606291100,date:'6月29日',weekday:'周一',dateNum:20260629,time:'11:00',group:'R32',home:'E1',away:'F3',venue:'迈阿密'},
+  {id:'R52',sortKey:202606291500,date:'6月29日',weekday:'周一',dateNum:20260629,time:'15:00',group:'R32',home:'G1',away:'H3',venue:'达拉斯'},
+  {id:'R53',sortKey:202606300300,date:'6月30日',weekday:'周二',dateNum:20260630,time:'03:00',group:'R32',home:'B1',away:'A3',venue:'旧金山'},
+  {id:'R54',sortKey:202606300700,date:'6月30日',weekday:'周二',dateNum:20260630,time:'07:00',group:'R32',home:'D1',away:'C3',venue:'波士顿'},
+  {id:'R55',sortKey:202606301100,date:'6月30日',weekday:'周二',dateNum:20260630,time:'11:00',group:'R32',home:'F1',away:'E3',venue:'费城'},
+  {id:'R56',sortKey:202606301500,date:'6月30日',weekday:'周二',dateNum:20260630,time:'15:00',group:'R32',home:'H1',away:'G3',venue:'西雅图'},
+  {id:'R57',sortKey:202607010300,date:'7月1日',weekday:'周三',dateNum:20260701,time:'03:00',group:'R32',home:'A2',away:'B2',venue:'温哥华'},
+  {id:'R58',sortKey:202607010700,date:'7月1日',weekday:'周三',dateNum:20260701,time:'07:00',group:'R32',home:'C2',away:'D2',venue:'多伦多'},
+  {id:'R59',sortKey:202607011100,date:'7月1日',weekday:'周三',dateNum:20260701,time:'11:00',group:'R32',home:'E2',away:'F2',venue:'亚特兰大'},
+  {id:'R60',sortKey:202607011500,date:'7月1日',weekday:'周三',dateNum:20260701,time:'15:00',group:'R32',home:'G2',away:'H2',venue:'休斯顿'},
+  {id:'R61',sortKey:202607020300,date:'7月2日',weekday:'周四',dateNum:20260702,time:'03:00',group:'R32',home:'I1',away:'J3',venue:'堪萨斯城'},
+  {id:'R62',sortKey:202607020700,date:'7月2日',weekday:'周四',dateNum:20260702,time:'07:00',group:'R32',home:'K1',away:'L3',venue:'蒙特雷'},
+  {id:'R63',sortKey:202607021100,date:'7月2日',weekday:'周四',dateNum:20260702,time:'11:00',group:'R32',home:'I2',away:'J2',venue:'瓜达拉哈拉'},
+  {id:'R64',sortKey:202607021500,date:'7月2日',weekday:'周四',dateNum:20260702,time:'15:00',group:'R32',home:'K2',away:'L2',venue:'墨西哥城'},
+  {id:'R65',sortKey:202607030300,date:'7月3日',weekday:'周五',dateNum:20260703,time:'03:00',group:'R32',home:'I3',away:'J1',venue:'纽约'},
+  {id:'R66',sortKey:202607030700,date:'7月3日',weekday:'周五',dateNum:20260703,time:'07:00',group:'R32',home:'L1',away:'K3',venue:'迈阿密'},
+  {id:'R67',sortKey:202607031100,date:'7月3日',weekday:'周五',dateNum:20260703,time:'11:00',group:'R32',home:'J3-2',away:'I3-2',venue:'波士顿'},
+  {id:'R68',sortKey:202607031500,date:'7月3日',weekday:'周五',dateNum:20260703,time:'15:00',group:'R32',home:'L3-2',away:'K3-2',venue:'达拉斯'},
+  {id:'R69',sortKey:202607040300,date:'7月4日',weekday:'周六',dateNum:20260704,time:'03:00',group:'R32',home:'A/B/C/D第3',away:'E/F/G/H第3',venue:'洛杉矶'},
+  {id:'R70',sortKey:202607040700,date:'7月4日',weekday:'周六',dateNum:20260704,time:'07:00',group:'R32',home:'I/J/K/L第3',away:'A/B/C/D第3',venue:'旧金山'},
+  {id:'R71',sortKey:202607041100,date:'7月4日',weekday:'周六',dateNum:20260704,time:'11:00',group:'R32',home:'E/F/G/H第3',away:'I/J/K/L第3',venue:'西雅图'},
+  {id:'R72',sortKey:202607041500,date:'7月4日',weekday:'周六',dateNum:20260704,time:'15:00',group:'R32',home:'最佳第3',away:'次佳第3',venue:'温哥华'},
+
+  // ===== 16强赛 7月4日-7月8日 =====
+  {id:'R73',sortKey:202607041900,date:'7月4日',weekday:'周六',dateNum:20260704,time:'19:00',group:'R16',home:'R49胜',away:'R50胜',venue:'洛杉矶'},
+  {id:'R74',sortKey:202607050300,date:'7月5日',weekday:'周日',dateNum:20260705,time:'03:00',group:'R16',home:'R53胜',away:'R54胜',venue:'旧金山'},
+  {id:'R75',sortKey:202607050700,date:'7月5日',weekday:'周日',dateNum:20260705,time:'07:00',group:'R16',home:'R51胜',away:'R52胜',venue:'纽约'},
+  {id:'R76',sortKey:202607051100,date:'7月5日',weekday:'周日',dateNum:20260705,time:'11:00',group:'R16',home:'R55胜',away:'R56胜',venue:'迈阿密'},
+  {id:'R77',sortKey:202607060300,date:'7月6日',weekday:'周一',dateNum:20260706,time:'03:00',group:'R16',home:'R57胜',away:'R58胜',venue:'波士顿'},
+  {id:'R78',sortKey:202607060700,date:'7月6日',weekday:'周一',dateNum:20260706,time:'07:00',group:'R16',home:'R61胜',away:'R62胜',venue:'费城'},
+  {id:'R79',sortKey:202607061100,date:'7月6日',weekday:'周一',dateNum:20260706,time:'11:00',group:'R16',home:'R59胜',away:'R60胜',venue:'亚特兰大'},
+  {id:'R80',sortKey:202607061500,date:'7月6日',weekday:'周一',dateNum:20260706,time:'15:00',group:'R16',home:'R63胜',away:'R64胜',venue:'休斯顿'},
+  {id:'R81',sortKey:202607070300,date:'7月7日',weekday:'周二',dateNum:20260707,time:'03:00',group:'R16',home:'R65胜',away:'R66胜',venue:'堪萨斯城'},
+  {id:'R82',sortKey:202607070700,date:'7月7日',weekday:'周二',dateNum:20260707,time:'07:00',group:'R16',home:'R67胜',away:'R68胜',venue:'多伦多'},
+  {id:'R83',sortKey:202607071100,date:'7月7日',weekday:'周二',dateNum:20260707,time:'11:00',group:'R16',home:'R69胜',away:'R70胜',venue:'蒙特雷'},
+  {id:'R84',sortKey:202607071500,date:'7月7日',weekday:'周二',dateNum:20260707,time:'15:00',group:'R16',home:'R71胜',away:'R72胜',venue:'墨西哥城'},
+  {id:'R85',sortKey:202607080300,date:'7月8日',weekday:'周三',dateNum:20260708,time:'03:00',group:'R16',home:'R49-2胜',away:'R50-2胜',venue:'瓜达拉哈拉'},
+  {id:'R86',sortKey:202607080700,date:'7月8日',weekday:'周三',dateNum:20260708,time:'07:00',group:'R16',home:'R53-2胜',away:'R54-2胜',venue:'西雅图'},
+  {id:'R87',sortKey:202607081100,date:'7月8日',weekday:'周三',dateNum:20260708,time:'11:00',group:'R16',home:'R51-2胜',away:'R52-2胜',venue:'温哥华'},
+  {id:'R88',sortKey:202607081500,date:'7月8日',weekday:'周三',dateNum:20260708,time:'15:00',group:'R16',home:'R55-2胜',away:'R56-2胜',venue:'洛杉矶'},
+
+  // ===== 1/4决赛 7月9日-7月12日 =====
+  {id:'R89',sortKey:202607090300,date:'7月9日',weekday:'周四',dateNum:20260709,time:'03:00',group:'QF',home:'R73胜',away:'R74胜',venue:'纽约'},
+  {id:'R90',sortKey:202607090700,date:'7月9日',weekday:'周四',dateNum:20260709,time:'07:00',group:'QF',home:'R75胜',away:'R76胜',venue:'迈阿密'},
+  {id:'R91',sortKey:202607091100,date:'7月9日',weekday:'周四',dateNum:20260709,time:'11:00',group:'QF',home:'R77胜',away:'R78胜',venue:'波士顿'},
+  {id:'R92',sortKey:202607091500,date:'7月9日',weekday:'周四',dateNum:20260709,time:'15:00',group:'QF',home:'R79胜',away:'R80胜',venue:'费城'},
+  {id:'R93',sortKey:202607100300,date:'7月10日',weekday:'周五',dateNum:20260710,time:'03:00',group:'QF',home:'R81胜',away:'R82胜',venue:'旧金山'},
+  {id:'R94',sortKey:202607100700,date:'7月10日',weekday:'周五',dateNum:20260710,time:'07:00',group:'QF',home:'R83胜',away:'R84胜',venue:'洛杉矶'},
+  {id:'R95',sortKey:202607101100,date:'7月10日',weekday:'周五',dateNum:20260710,time:'11:00',group:'QF',home:'R85胜',away:'R86胜',venue:'亚特兰大'},
+  {id:'R96',sortKey:202607101500,date:'7月10日',weekday:'周五',dateNum:20260710,time:'15:00',group:'QF',home:'R87胜',away:'R88胜',venue:'休斯顿'},
+
+  // ===== 半决赛 7月14日-7月15日 =====
+  {id:'R97',sortKey:202607140300,date:'7月14日',weekday:'周二',dateNum:20260714,time:'03:00',group:'SF',home:'R89胜',away:'R90胜',venue:'纽约'},
+  {id:'R98',sortKey:202607140700,date:'7月14日',weekday:'周二',dateNum:20260714,time:'07:00',group:'SF',home:'R91胜',away:'R92胜',venue:'迈阿密'},
+  {id:'R99',sortKey:202607150300,date:'7月15日',weekday:'周三',dateNum:20260715,time:'03:00',group:'SF',home:'R93胜',away:'R94胜',venue:'洛杉矶'},
+  {id:'R100',sortKey:202607150700,date:'7月15日',weekday:'周三',dateNum:20260715,time:'07:00',group:'SF',home:'R95胜',away:'R96胜',venue:'旧金山'},
+
+  // ===== 季军赛 =====
+  {id:'R101',sortKey:202607180300,date:'7月18日',weekday:'周六',dateNum:20260718,time:'03:00',group:'3rd',home:'R97负',away:'R98负',venue:'迈阿密'},
+  {id:'R102',sortKey:202607180700,date:'7月18日',weekday:'周六',dateNum:20260718,time:'07:00',group:'3rd',home:'R99负',away:'R100负',venue:'亚特兰大'},
+
+  // ===== 决赛 =====
+  {id:'R103',sortKey:202607190300,date:'7月19日',weekday:'周日',dateNum:20260719,time:'03:00',group:'F',home:'R97胜',away:'R98胜',venue:'纽约'},
+  {id:'R104',sortKey:202607190700,date:'7月19日',weekday:'周日',dateNum:20260719,time:'07:00',group:'F',home:'R99胜',away:'R100胜',venue:'纽约大都会'}
 ];
 
-// ===== KNOCKOUT DATA =====
+// ===== KNOCKOUT DATA (自动从积分榜更新) =====
 const KO_UPPER = [
   { name: '32强赛', date: '6/29', venue: '洛杉矶', matches: [
-    {id:'RU1', home:'A组第1', away:'B组第3', homeFlag:'🇲🇽', awayFlag:'🇨🇦'},
-    {id:'RU2', home:'C组第1', away:'D组第3', homeFlag:'🇧🇷', awayFlag:'🇺🇸'},
-    {id:'RU3', home:'E组第1', away:'F组第3', homeFlag:'🇩🇪', awayFlag:'🇳🇱'},
-    {id:'RU4', home:'G组第1', away:'H组第3', homeFlag:'🇧🇪', awayFlag:'🇪🇸'},
+    {id:'R49', home:'A1', away:'B3', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R50', home:'C1', away:'D3', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R51', home:'E1', away:'F3', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R52', home:'G1', away:'H3', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
   { name: '16强', date: '7/4', venue: '洛杉矶', matches: [
-    {id:'R16U1', home:'32强胜者1', away:'32强胜者2', homeFlag:'🏳️', awayFlag:'🏳️'},
-    {id:'R16U2', home:'32强胜者3', away:'32强胜者4', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R73', home:'R49胜', away:'R50胜', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R75', home:'R51胜', away:'R52胜', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
   { name: '1/4决赛', date: '7/9', venue: '纽约', matches: [
-    {id:'QFU1', home:'16强胜者1', away:'16强胜者2', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R89', home:'R73胜', away:'R75胜', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
   { name: '半决赛', date: '7/14', venue: '纽约', matches: [
-    {id:'SFU1', home:'1/4胜者1', away:'待定', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R97', home:'R89胜', away:'待定', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
 ];
 
 const KO_LOWER = [
   { name: '32强赛', date: '6/29', venue: '迈阿密', matches: [
-    {id:'RL1', home:'I组第1', away:'J组第3', homeFlag:'🇫🇷', awayFlag:'🇦🇷'},
-    {id:'RL2', home:'K组第1', away:'L组第3', homeFlag:'🇵🇹', awayFlag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
-    {id:'RL3', home:'I组第2', away:'J组第2', homeFlag:'🇳🇴', awayFlag:'🇦🇹'},
-    {id:'RL4', home:'K组第2', away:'L组第2', homeFlag:'🇨🇴', awayFlag:'🇭🇷'},
+    {id:'R61', home:'I1', away:'J3', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R62', home:'K1', away:'L3', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R63', home:'I2', away:'J2', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R64', home:'K2', away:'L2', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
   { name: '16强', date: '7/4', venue: '迈阿密', matches: [
-    {id:'R16L1', home:'32强胜者5', away:'32强胜者6', homeFlag:'🏳️', awayFlag:'🏳️'},
-    {id:'R16L2', home:'32强胜者7', away:'32强胜者8', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R77', home:'R61胜', away:'R62胜', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R79', home:'R63胜', away:'R64胜', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
   { name: '1/4决赛', date: '7/10', venue: '达拉斯', matches: [
-    {id:'QFL1', home:'16强胜者3', away:'16强胜者4', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R91', home:'R77胜', away:'R79胜', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
   { name: '半决赛', date: '7/15', venue: '洛杉矶', matches: [
-    {id:'SFL1', home:'1/4胜者2', away:'待定', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R99', home:'待定', away:'R91胜', homeFlag:'🏳️', awayFlag:'🏳️'},
   ]},
 ];
+
+// ===== 自动从小组赛结果更新淘汰赛对阵 =====
+// 根据小组赛积分榜确定淘汰赛对阵
+function updateKoFromStandings() {
+  const groups = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  const standings = {};
+  let allComplete = true;
+
+  groups.forEach(g => {
+    const rows = computeStandings(g);
+    standings[g] = rows;
+    // 检查小组赛是否结束（每组6场比赛）
+    const played = MATCHES.filter(m => m.group === g && liveScores[m.id] && liveScores[m.id].status === 'finished').length;
+    if (played < 6) allComplete = false;
+  });
+
+  // 如果所有小组赛结束，更新淘汰赛对阵
+  if (allComplete) {
+    // 收集所有第3名并排序
+    const thirdPlace = [];
+    groups.forEach(g => {
+      if (standings[g][2]) {
+        thirdPlace.push({ group: g, team: standings[g][2].team, pts: standings[g][2].pts, gd: standings[g][2].gd, gf: standings[g][2].gf });
+      }
+    });
+    thirdPlace.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+    const best4Third = thirdPlace.slice(0, 4).map(t => t.group);
+
+    // 更新32强赛对阵 (R49-R52 上半区)
+    if (standings['A'][0] && standings['B'][2]) {
+      koResults['R49'] = { home: standings['A'][0].team, homeFlag: flag(standings['A'][0].team), homeScore: '-', away: standings['B'][2].team, awayFlag: flag(standings['B'][2].team), awayScore: '-' };
+    }
+    if (standings['C'][0] && standings['D'][2]) {
+      koResults['R50'] = { home: standings['C'][0].team, homeFlag: flag(standings['C'][0].team), homeScore: '-', away: standings['D'][2].team, awayFlag: flag(standings['D'][2].team), awayScore: '-' };
+    }
+    if (standings['E'][0] && standings['F'][2]) {
+      koResults['R51'] = { home: standings['E'][0].team, homeFlag: flag(standings['E'][0].team), homeScore: '-', away: standings['F'][2].team, awayFlag: flag(standings['F'][2].team), awayScore: '-' };
+    }
+    if (standings['G'][0] && standings['H'][2]) {
+      koResults['R52'] = { home: standings['G'][0].team, homeFlag: flag(standings['G'][0].team), homeScore: '-', away: standings['H'][2].team, awayFlag: flag(standings['H'][2].team), awayScore: '-' };
+    }
+
+    // 32强赛下半区
+    if (standings['I'][0] && standings['J'][2]) {
+      koResults['R61'] = { home: standings['I'][0].team, homeFlag: flag(standings['I'][0].team), homeScore: '-', away: standings['J'][2].team, awayFlag: flag(standings['J'][2].team), awayScore: '-' };
+    }
+    if (standings['K'][0] && standings['L'][2]) {
+      koResults['R62'] = { home: standings['K'][0].team, homeFlag: flag(standings['K'][0].team), homeScore: '-', away: standings['L'][2].team, awayFlag: flag(standings['L'][2].team), awayScore: '-' };
+    }
+    if (standings['I'][1] && standings['J'][1]) {
+      koResults['R63'] = { home: standings['I'][1].team, homeFlag: flag(standings['I'][1].team), homeScore: '-', away: standings['J'][1].team, awayFlag: flag(standings['J'][1].team), awayScore: '-' };
+    }
+    if (standings['K'][1] && standings['L'][1]) {
+      koResults['R64'] = { home: standings['K'][1].team, homeFlag: flag(standings['K'][1].team), homeScore: '-', away: standings['L'][1].team, awayFlag: flag(standings['L'][1].team), awayScore: '-' };
+    }
+
+    console.log('✅ 小组赛已全部结束，淘汰赛对阵已自动更新');
+  }
+}
 
 // ===== LIVE SCORES =====
 let liveScores = {};
@@ -1193,12 +1400,39 @@ function switchTab(tab, btn) {
 
 // ===== SCORE FETCH =====
 async function fetchScores() {
+  // 检查频率限制
+  if (!ApiRateLimiter.canRequest()) {
+    console.log('API每日请求已达上限，使用缓存数据');
+    const cached = ApiRateLimiter.getCache('matches');
+    if (cached) {
+      processApiData(cached);
+      updateUI();
+    }
+    return;
+  }
+
+  // 尝试从缓存获取
+  const cached = ApiRateLimiter.getCache('matches');
+  if (cached) {
+    processApiData(cached);
+    updateUI();
+    return;
+  }
+
   if (CONFIG.WC2026_API_KEY) {
     try {
       const resp = await fetch('https://api.wc2026api.com/v1/matches', {
         headers: { 'Authorization': `Bearer ${CONFIG.WC2026_API_KEY}` }
       });
-      if (resp.ok) { processApiData(await resp.json()); updateUI(); return; }
+      if (resp.ok) {
+        const data = await resp.json();
+        ApiRateLimiter.incrementCount();
+        ApiRateLimiter.setCache('matches', data);
+        processApiData(data);
+        updateUI();
+        updateApiStatus();
+        return;
+      }
     } catch(e) { console.warn('API fetch failed', e); }
   }
   if (CONFIG.GITHUB_RAW_URL) {
@@ -1210,14 +1444,38 @@ async function fetchScores() {
   useDemoData(); updateUI();
 }
 
+// 更新API状态显示
+function updateApiStatus() {
+  const remaining = ApiRateLimiter.getRemaining();
+  const used = CONFIG.DAILY_LIMIT - remaining;
+  const today = new Date().toLocaleDateString('zh-CN', {month:'numeric', day:'numeric'});
+
+  // 更新控制栏显示
+  const quotaInfo = document.getElementById('apiQuotaInfo');
+  if (quotaInfo) {
+    if (remaining <= 0) {
+      quotaInfo.innerHTML = `<span style="color:#e74c3c">⚠️ 今日额度已用完 (${used}/${CONFIG.DAILY_LIMIT})</span>`;
+    } else if (remaining < 20) {
+      quotaInfo.innerHTML = `<span style="color:#f39c12">⚡ 剩余 ${remaining} 次可用</span>`;
+    } else {
+      quotaInfo.innerHTML = `<span style="color:#2ecc71">✓ 今日已用 ${used} 次</span>`;
+    }
+  }
+
+  console.log(`📊 API使用情况: 今日已用 ${used}/${CONFIG.DAILY_LIMIT} 次 (${today}), 剩余 ${remaining} 次`);
+}
+
 function processApiData(data) {
   lastSource = Array.isArray(data) ? 'api' : 'github';
   if (Array.isArray(data)) {
     data.forEach(m => {
-      const match = MATCHES.find(mm =>
-        (mm.home === m.home && mm.away === m.away) ||
-        (mm.home.includes(m.home) && mm.away.includes(m.away))
-      );
+      // 尝试通过多种方式匹配比赛
+      const match = MATCHES.find(mm => {
+        if (mm.home === m.home || mm.away === m.away) return true;
+        if (mm.home === m.home || mm.home.includes(m.home)) return true;
+        if (m.home && mm.home === m.home) return true;
+        return false;
+      });
       if (match) {
         liveScores[match.id] = {
           home: m.homeScore ?? m.home_score ?? m.score?.home,
@@ -1226,11 +1484,26 @@ function processApiData(data) {
           minute: m.minute || 0
         };
       }
+      // 同时更新淘汰赛对阵数据
+      if (m.id && m.home && m.away) {
+        koResults[m.id] = {
+          home: m.home,
+          homeFlag: flag(m.home),
+          homeScore: m.homeScore ?? m.home_score ?? m.score?.home ?? '-',
+          away: m.away,
+          awayFlag: flag(m.away),
+          awayScore: m.awayScore ?? m.away_score ?? m.score?.away ?? '-',
+          status: m.status || 'pending'
+        };
+      }
     });
   } else {
     Object.assign(liveScores, data.scores || data);
     Object.assign(koResults, data.knockout || {});
   }
+
+  // 尝试从积分榜自动更新淘汰赛对阵
+  updateKoFromStandings();
 }
 
 function useDemoData() { lastSource = 'demo'; }
@@ -1423,6 +1696,26 @@ function renderBracket() {
   const container = document.getElementById('bracketClassic');
   if (!container) return;
 
+  // 定义比赛卡片生成函数
+  const matchCard = (id, home, away, homeFlag, awayFlag, homeScore, awayScore, stage, venue) => {
+    const s = koResults[id];
+    const isLive = s && s.status === 'live';
+    const displayHome = s && s.home ? s.home : home;
+    const displayAway = s && s.away ? s.away : away;
+    const displayHomeFlag = s && s.homeFlag ? s.homeFlag : (homeFlag || '🏳️');
+    const displayAwayFlag = s && s.awayFlag ? s.awayFlag : (awayFlag || '🏳️');
+    const displayHomeScore = s && s.homeScore !== undefined ? s.homeScore : '-';
+    const displayAwayScore = s && s.awayScore !== undefined ? s.awayScore : '-';
+    const isTBD = home.includes('胜') || home.includes('待定') || home.includes('第') || !koResults[id];
+    const isTBD2 = away.includes('胜') || away.includes('待定') || away.includes('第') || !koResults[id];
+
+    return `<div class="bracket-match-card ${stage}${isLive ? ' live' : ''}">
+      <div class="match-id"><span>${id}</span><span>${venue || ''}</span></div>
+      <div class="team-line${isTBD ? ' tbd' : ''}"><span class="flag">${displayHomeFlag}</span><span class="name">${displayHome}</span><span class="score">${displayHomeScore}</span></div>
+      <div class="team-line${isTBD2 ? ' tbd' : ''}"><span class="flag">${displayAwayFlag}</span><span class="name">${displayAway}</span><span class="score">${displayAwayScore}</span></div>
+    </div>`;
+  };
+
   // 经典对称结构：左边上半区 → 中间决赛 → 右边下半区
   const html = `
 <div style="display:flex;align-items:center;gap:0;min-width:1150px;padding:8px 0;">
@@ -1434,23 +1727,18 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label r32">⚔️ 32强赛</div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">
-        ${KO_UPPER[0].matches.map((m, i) => `<div class="bracket-match-card r32" style="animation-delay:${i * 0.05}s;min-width:115px;">
-          <div class="match-id"><span>M${49+i}</span><span>${m.venue||''}</span></div>
-          <div class="team-line${m.home.includes('胜者')?' tbd':''}"><span class="flag">${m.homeFlag||'🏳️'}</span><span class="name">${m.home}</span><span class="score">-</span></div>
-          <div class="team-line${m.away.includes('胜者')?' tbd':''}"><span class="flag">${m.awayFlag||'🏳️'}</span><span class="name">${m.away}</span><span class="score">-</span></div>
-        </div>`).join('')}
+        ${matchCard('R49', 'A1', 'B3', '🏳️', '🏳️', '-', '-', 'r32', '洛杉矶')}
+        ${matchCard('R50', 'C1', 'D3', '🏳️', '🏳️', '-', '-', 'r32', '纽约')}
+        ${matchCard('R51', 'E1', 'F3', '🏳️', '🏳️', '-', '-', 'r32', '迈阿密')}
+        ${matchCard('R52', 'G1', 'H3', '🏳️', '🏳️', '-', '-', 'r32', '达拉斯')}
       </div>
     </div>
 
     <!-- 连接线 -->
     <div style="width:24px;position:relative;align-self:stretch;">
       <div style="position:absolute;top:12%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(253,187,45,0.4));"></div>
-      <div style="position:absolute;top:25%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(253,187,45,0.4));"></div>
       <div style="position:absolute;top:37%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(253,187,45,0.4));"></div>
-      <div style="position:absolute;top:50%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(253,187,45,0.4));"></div>
       <div style="position:absolute;top:62%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(253,187,45,0.4));"></div>
-      <div style="position:absolute;top:75%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(253,187,45,0.4));"></div>
-      <div style="position:absolute;top:88%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(253,187,45,0.4));"></div>
       <div style="position:absolute;top:25%;right:0;height:50%;width:2px;background:rgba(253,187,45,0.4);"></div>
     </div>
 
@@ -1458,16 +1746,8 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label r16">🎯 16强</div>
       <div style="display:flex;flex-direction:column;gap:24px;margin-top:10px;padding-top:22%;">
-        <div class="bracket-match-card r16" style="animation-delay:0.2s;min-width:120px;">
-          <div class="match-id"><span>57</span><span>洛杉矶</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强1胜</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强2胜</span><span class="score">-</span></div>
-        </div>
-        <div class="bracket-match-card r16" style="animation-delay:0.25s;min-width:120px;">
-          <div class="match-id"><span>58</span><span>洛杉矶</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强3胜</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强4胜</span><span class="score">-</span></div>
-        </div>
+        ${matchCard('R73', 'R49胜', 'R50胜', '🏳️', '🏳️', '-', '-', 'r16', '洛杉矶')}
+        ${matchCard('R75', 'R51胜', 'R52胜', '🏳️', '🏳️', '-', '-', 'r16', '纽约')}
       </div>
     </div>
 
@@ -1475,7 +1755,6 @@ function renderBracket() {
     <div style="width:28px;position:relative;align-self:stretch;">
       <div style="position:absolute;top:33%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(109,213,237,0.5));"></div>
       <div style="position:absolute;top:50%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(109,213,237,0.5));"></div>
-      <div style="position:absolute;top:66%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(109,213,237,0.5));"></div>
       <div style="position:absolute;top:50%;right:0;height:33%;width:2px;background:rgba(109,213,237,0.5);"></div>
     </div>
 
@@ -1483,11 +1762,7 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label qf">🏅 1/4决赛</div>
       <div style="display:flex;flex-direction:column;gap:24px;margin-top:10px;padding-top:33%;">
-        <div class="bracket-match-card qf" style="animation-delay:0.3s;min-width:125px;">
-          <div class="match-id"><span>59</span><span>纽约</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强1胜</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强2胜</span><span class="score">-</span></div>
-        </div>
+        ${matchCard('R89', 'R73胜', 'R75胜', '🏳️', '🏳️', '-', '-', 'qf', '纽约')}
       </div>
     </div>
 
@@ -1500,11 +1775,7 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label sf">🔥 半决赛</div>
       <div style="display:flex;flex-direction:column;gap:24px;margin-top:10px;padding-top:42%;">
-        <div class="bracket-match-card sf" style="animation-delay:0.35s;min-width:130px;">
-          <div class="match-id"><span>61</span><span>纽约</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">1/4上半区胜</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">待定</span><span class="score">-</span></div>
-        </div>
+        ${matchCard('R97', 'R89胜', '待定', '🏳️', '🏳️', '-', '-', 'sf', '纽约')}
       </div>
     </div>
 
@@ -1517,13 +1788,7 @@ function renderBracket() {
       <div class="final-label">🏆 决赛</div>
       <div class="final-date">7月19日</div>
       <div class="final-venue">纽约大都会球场</div>
-      <div class="team-line tbd" style="margin-top:12px;background:rgba(253,187,45,0.05);border-radius:6px;padding:8px 10px;">
-        <span class="flag">🏳️</span><span class="name">上半区胜者</span><span class="score" style="font-size:1rem;">-</span>
-      </div>
-      <div style="text-align:center;padding:4px 0;color:#fdbb2d;font-weight:700;">VS</div>
-      <div class="team-line tbd" style="background:rgba(253,187,45,0.05);border-radius:6px;padding:8px 10px;">
-        <span class="flag">🏳️</span><span class="name">下半区胜者</span><span class="score" style="font-size:1rem;">-</span>
-      </div>
+      ${matchCard('R103', 'R97胜', 'R99胜', '🏳️', '🏳️', '-', '-', 'final', '')}
     </div>
     <div style="height:42%;width:3px;background:linear-gradient(180deg,rgba(231,76,60,0.5),rgba(253,187,45,0.8));"></div>
   </div>
@@ -1535,11 +1800,7 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label sf">🔥 半决赛</div>
       <div style="display:flex;flex-direction:column;gap:24px;margin-top:10px;padding-top:42%;">
-        <div class="bracket-match-card sf" style="animation-delay:0.35s;min-width:130px;">
-          <div class="match-id"><span>62</span><span>洛杉矶</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">待定</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">1/4下半区胜</span><span class="score">-</span></div>
-        </div>
+        ${matchCard('R99', '待定', 'R91胜', '🏳️', '🏳️', '-', '-', 'sf', '洛杉矶')}
       </div>
     </div>
 
@@ -1552,11 +1813,7 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label qf">🏅 1/4决赛</div>
       <div style="display:flex;flex-direction:column;gap:24px;margin-top:10px;padding-top:33%;">
-        <div class="bracket-match-card qf" style="animation-delay:0.3s;min-width:125px;">
-          <div class="match-id"><span>60</span><span>达拉斯</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强3胜</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强4胜</span><span class="score">-</span></div>
-        </div>
+        ${matchCard('R91', 'R77胜', 'R79胜', '🏳️', '🏳️', '-', '-', 'qf', '达拉斯')}
       </div>
     </div>
 
@@ -1571,28 +1828,16 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label r16">🎯 16强</div>
       <div style="display:flex;flex-direction:column;gap:24px;margin-top:10px;padding-top:22%;">
-        <div class="bracket-match-card r16" style="animation-delay:0.25s;min-width:120px;">
-          <div class="match-id"><span>63</span><span>迈阿密</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强5胜</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强6胜</span><span class="score">-</span></div>
-        </div>
-        <div class="bracket-match-card r16" style="animation-delay:0.2s;min-width:120px;">
-          <div class="match-id"><span>64</span><span>迈阿密</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强7胜</span><span class="score">-</span></div>
-          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">32强8胜</span><span class="score">-</span></div>
-        </div>
+        ${matchCard('R77', 'R61胜', 'R62胜', '🏳️', '🏳️', '-', '-', 'r16', '迈阿密')}
+        ${matchCard('R79', 'R63胜', 'R64胜', '🏳️', '🏳️', '-', '-', 'r16', '波士顿')}
       </div>
     </div>
 
     <!-- 连接线 -->
     <div style="width:24px;position:relative;align-self:stretch;">
       <div style="position:absolute;top:12%;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(253,187,45,0.4),transparent);"></div>
-      <div style="position:absolute;top:25%;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(253,187,45,0.4),transparent);"></div>
       <div style="position:absolute;top:37%;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(253,187,45,0.4),transparent);"></div>
-      <div style="position:absolute;top:50%;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(253,187,45,0.4),transparent);"></div>
       <div style="position:absolute;top:62%;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(253,187,45,0.4),transparent);"></div>
-      <div style="position:absolute;top:75%;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(253,187,45,0.4),transparent);"></div>
-      <div style="position:absolute;top:88%;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(253,187,45,0.4),transparent);"></div>
       <div style="position:absolute;top:50%;left:0;height:50%;width:2px;background:rgba(253,187,45,0.4);"></div>
     </div>
 
@@ -1600,11 +1845,10 @@ function renderBracket() {
     <div style="text-align:center;padding:0 8px;">
       <div class="bracket-stage-label r32">⚔️ 32强赛</div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">
-        ${KO_LOWER[0].matches.map((m, i) => `<div class="bracket-match-card r32" style="animation-delay:${(7-i) * 0.05}s;min-width:115px;">
-          <div class="match-id"><span>M${57+i}</span><span>${m.venue||''}</span></div>
-          <div class="team-line${m.home.includes('胜者')?' tbd':''}"><span class="flag">${m.homeFlag||'🏳️'}</span><span class="name">${m.home}</span><span class="score">-</span></div>
-          <div class="team-line${m.away.includes('胜者')?' tbd':''}"><span class="flag">${m.awayFlag||'🏳️'}</span><span class="name">${m.away}</span><span class="score">-</span></div>
-        </div>`).join('')}
+        ${matchCard('R61', 'I1', 'J3', '🏳️', '🏳️', '-', '-', 'r32', '堪萨斯城')}
+        ${matchCard('R62', 'K1', 'L3', '🏳️', '🏳️', '-', '-', 'r32', '蒙特雷')}
+        ${matchCard('R63', 'I2', 'J2', '🏳️', '🏳️', '-', '-', 'r32', '瓜达拉哈拉')}
+        ${matchCard('R64', 'K2', 'L2', '🏳️', '🏳️', '-', '-', 'r32', '墨西哥城')}
       </div>
     </div>
 
@@ -1616,20 +1860,34 @@ function renderBracket() {
   container.innerHTML = html;
 }
 
-// ===== BRACKET ZOOM =====
-let bracketZoom = 1.0;
+// ===== BRACKET FULLSCREEN =====
+function openBracketFullscreen() {
+  const modal = document.getElementById('bracketModal');
+  const content = document.getElementById('bracketModalContent');
+  const bracketWrapper = document.querySelector('.bracket-wrapper');
 
-function zoomBracket(delta) {
-  if (delta === 0) {
-    bracketZoom = 1.0;
-  } else {
-    bracketZoom = Math.max(0.5, Math.min(2.0, bracketZoom + delta));
+  if (modal && content && bracketWrapper) {
+    // 复制对阵图内容
+    content.innerHTML = bracketWrapper.innerHTML;
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
   }
-  const inner = document.querySelector('.bracket-zoom-inner');
-  if (inner) inner.style.transform = `scale(${bracketZoom})`;
-  const level = document.getElementById('zoomLevel');
-  if (level) level.textContent = Math.round(bracketZoom * 100) + '%';
 }
+
+function closeBracketModal() {
+  const modal = document.getElementById('bracketModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+// 点击背景关闭
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    closeBracketModal();
+  }
+});
 
 // ===== REFRESH =====
 function refreshScores() { liveScores = {}; fetchScores(); }

@@ -1681,9 +1681,18 @@ function renderScheduleGroup() {
   const tbody = document.getElementById('schedule-group-tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
+  
+  // 定义组的优先级：小组赛(A-L)在前，淘汰赛在后
+  const groupOrder = {
+    'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6,
+    'G': 7, 'H': 8, 'I': 9, 'J': 10, 'K': 11, 'L': 12,
+    'R32': 13, 'R16': 14, 'QF': 15, 'SF': 16, '3rd': 17, 'F': 18
+  };
+  
   const sorted = [...MATCHES].sort((a, b) => {
-    if (a.group < b.group) return -1;
-    if (a.group > b.group) return 1;
+    const orderA = groupOrder[a.group] || 99;
+    const orderB = groupOrder[b.group] || 99;
+    if (orderA !== orderB) return orderA - orderB;
     return a.sortKey - b.sortKey;
   });
 

@@ -12,4 +12,5 @@
 - **VPN 代理**: v2rayN，本地代理端口 `10808`，Git 代理已配置
 - **比分 API**: wc2026api.com（已申请 API Key，待整合）
 - **GitHub Pages 地址**: `https://jian88680-ctrl.github.io/worldcup2026`（已启用）
+- **v2.0 更新（2026-04-02）**: 补全48队完整名单（捷克/波黑/土耳其/瑞典/伊拉克/民主刚果）、新增「按日期赛程」tab、淘汰赛改为可视化对阵图（bracket）
 - **下一步**: 接入 wc2026api.com 实时比分 API

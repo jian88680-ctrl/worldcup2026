@@ -11,6 +11,7 @@
     background: #0a0e1a;
     color: #e0e6f0;
     min-height: 100vh;
+    user-scalable=yes;
   }
 
   /* ===== LIVE SCORE BAR ===== */
@@ -131,11 +132,11 @@
   /* ===== GROUP CARDS ===== */
   .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
   .group-card { background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden; }
-  .group-header { padding: 12px 16px; font-weight: 800; font-size: 1rem; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+  .group-header { padding: 12px 16px; font-weight: 800; font-size: 0.95rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .group-body { padding: 10px 14px 14px; }
   .match-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 6px; font-size: 0.85rem; }
   .match-row:last-child { border-bottom: none; }
-  .match-date { color: #6b8cad; width: 46px; flex-shrink: 0; font-size: 0.75rem; }
+  .match-date { color: #6b8cad; width: 56px; flex-shrink: 0; font-size: 0.72rem; }
   .match-time { color: #fdbb2d; width: 44px; flex-shrink: 0; font-size: 0.8rem; font-weight: 600; }
   .match-teams { flex: 1; display: flex; align-items: center; gap: 6px; }
   .team { font-weight: 600; color: #dde; }
@@ -162,6 +163,22 @@
   .gh-e { color: #e74c3c; } .gh-f { color: #1abc9c; } .gh-g { color: #f1c40f; } .gh-h { color: #e91e8c; }
   .gh-i { color: #00bcd4; } .gh-j { color: #ff9800; } .gh-k { color: #8bc34a; } .gh-l { color: #cddc39; }
 
+  /* ===== GROUP STANDINGS ===== */
+  .standings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 24px; }
+  .standings-card { background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden; }
+  .standings-header { padding: 10px 14px; font-size: 0.85rem; font-weight: 800; }
+  .standings-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .standings-table th { padding: 6px 8px; color: #556; font-weight: 600; text-align: left; font-size: 0.72rem; background: rgba(255,255,255,0.03); }
+  .standings-table th.num { text-align: center; }
+  .standings-table td { padding: 6px 8px; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  .standings-table td.num { text-align: center; color: #8a9bb5; font-weight: 600; font-size: 0.75rem; }
+  .standings-table td.pts { text-align: center; font-weight: 900; color: #fdbb2d; font-size: 0.82rem; }
+  .standings-rank { width: 18px; text-align: center; font-weight: 700; color: #556; font-size: 0.72rem; }
+  .standings-rank.q { color: #2ecc71; }
+  .standings-rank.oq { color: #f1c40f; }
+  .standings-team { display: flex; align-items: center; gap: 5px; font-weight: 600; }
+  .standings-team-flag { font-size: 0.9rem; }
+
   /* ===== SCHEDULE TABLE ===== */
   .schedule-table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -172,6 +189,7 @@
   .date-group-header td { background: #1a2540; padding: 7px 12px; color: #fdbb2d; font-weight: 700; font-size: 0.88rem; letter-spacing: 1px; }
   td { padding: 9px 12px; vertical-align: middle; }
   .td-date { color: #8a9bb5; white-space: nowrap; }
+  .td-weekday { color: #fdbb2d; font-size: 0.75rem; white-space: nowrap; }
   .td-time { color: #fdbb2d; font-weight: 700; white-space: nowrap; }
   .td-group span { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
   .td-teams { font-weight: 600; }
@@ -196,11 +214,78 @@
   .section-title span { color: #fdbb2d; }
 
   /* ===== KNOCKOUT BRACKET ===== */
-  .bracket-wrap { overflow-x: auto; padding-bottom: 16px; }
-  .bracket {
+  .bracket-section { display: flex; flex-direction: column; gap: 32px; }
+
+  /* Zoom controls */
+  .bracket-zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+  .zoom-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #aab;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .zoom-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+  .zoom-level { font-size: 0.78rem; color: #556; min-width: 40px; text-align: center; }
+  .bracket-zoom-wrap {
+    overflow: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    background: rgba(0,0,0,0.2);
+    padding: 20px;
+    cursor: grab;
+  }
+  .bracket-zoom-wrap:active { cursor: grabbing; }
+  .bracket-zoom-inner {
+    transform-origin: top left;
+    transition: transform 0.15s ease;
+    min-width: max-content;
+  }
+
+  /* Upper/Lower bracket layout */
+  .bracket-half { margin-bottom: 8px; }
+  .bracket-half-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #8a9bb5;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px 8px 0 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bracket-half-inner {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0 0 12px 12px;
+    overflow-x: auto;
+    padding: 16px;
+    background: rgba(255,255,255,0.02);
+  }
+  .bracket-half-inner::-webkit-scrollbar { height: 6px; }
+  .bracket-half-inner::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
+  .bracket-half-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+  .bracket-row {
     display: flex;
     gap: 0;
-    min-width: 1100px;
+    min-width: 900px;
     align-items: center;
   }
   .bracket-round {
@@ -218,6 +303,7 @@
     letter-spacing: 0.5px;
     white-space: nowrap;
   }
+  .round-subtitle { font-size: 0.65rem; color: #556; font-weight: 400; }
   .round-matches {
     display: flex;
     flex-direction: column;
@@ -236,6 +322,7 @@
     transition: border-color 0.2s;
   }
   .bracket-match:hover { border-color: rgba(253,187,45,0.4); }
+  .bracket-match.live-match { border-color: rgba(231,76,60,0.5); box-shadow: 0 0 12px rgba(231,76,60,0.15); }
   .bracket-match-info {
     background: rgba(253,187,45,0.07);
     padding: 2px 8px;
@@ -253,18 +340,19 @@
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
   .bracket-team:last-child { border-bottom: none; }
-  .bracket-team-name { flex: 1; font-size: 0.82rem; font-weight: 600; color: #dde; }
+  .bracket-team-name { flex: 1; font-size: 0.82rem; font-weight: 600; color: #dde; display: flex; align-items: center; gap: 5px; }
+  .bracket-team-flag { font-size: 0.9rem; }
   .bracket-team-score { font-size: 0.88rem; font-weight: 900; color: #fdbb2d; min-width: 18px; text-align: center; }
   .bracket-team.tbd .bracket-team-name { color: #556; font-style: italic; font-weight: 400; }
   .bracket-team.winner .bracket-team-name { color: #fdbb2d; }
-  .bracket-connector {
-    width: 24px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  .bracket-connector { width: 20px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .bracket-connector-line {
+    width: 100%;
+    border-top: 2px solid rgba(255,255,255,0.15);
+    height: 0;
   }
+  .bracket-connector-arrow { color: rgba(255,255,255,0.2); font-size: 0.9rem; }
+
   .bracket-final-wrap {
     display: flex;
     flex-direction: column;
@@ -277,7 +365,7 @@
     border-radius: 12px;
     padding: 16px 20px;
     text-align: center;
-    min-width: 120px;
+    min-width: 130px;
   }
   .bracket-champion .trophy { font-size: 2rem; margin-bottom: 6px; }
   .bracket-champion .champ-label { font-size: 0.72rem; color: #fdbb2d; font-weight: 700; }
@@ -295,6 +383,42 @@
   /* Score update animation */
   .score-updated { animation: scoreFlash 0.6s ease-out; }
   @keyframes scoreFlash { 0% { background: rgba(253,187,45,0.4); } 100% { background: transparent; } }
+
+  /* ===== API CONFIG ===== */
+  .api-config-bar {
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #7aad8a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .api-config-bar a { color: #2ecc71; }
+  .api-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #dde;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    width: 200px;
+  }
+  .api-apply-btn {
+    background: rgba(46,204,113,0.2);
+    border: 1px solid rgba(46,204,113,0.4);
+    color: #2ecc71;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
 
   /* ===== FOOTER ===== */
   footer { text-align: center; padding: 24px; color: #3a5070; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 40px; }
@@ -331,13 +455,14 @@
     <span class="badge">🌍 48支球队</span>
     <span class="badge">🏟️ 16座城市</span>
     <span class="badge">⚽ 104场比赛</span>
-    <span class="badge">📅 6月11日 – 7月19日</span>
+    <span class="badge">📅 6月12日 – 7月19日</span>
   </div>
 </header>
 
 <div class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('overview',this)">📋 赛事概览</button>
   <button class="tab-btn" onclick="switchTab('groups',this)">🏠 小组赛分组</button>
+  <button class="tab-btn" onclick="switchTab('standings',this)">📊 小组积分榜</button>
   <button class="tab-btn" onclick="switchTab('schedule-group',this)">📋 按组赛程</button>
   <button class="tab-btn" onclick="switchTab('schedule-date',this)">📅 按日期赛程</button>
   <button class="tab-btn" onclick="switchTab('knockout',this)">🏆 淘汰赛对阵</button>
@@ -361,18 +486,18 @@
 
   <div class="section-title">🌍 12个小组概览</div>
   <div class="groups-grid">
-    <div class="group-card"><div class="group-header g-a"><span class="gh-a">A组</span> 墨西哥 · 韩国 · 南非 · 捷克</div></div>
-    <div class="group-card"><div class="group-header g-b"><span class="gh-b">B组</span> 加拿大 · 卡塔尔 · 瑞士 · 波黑</div></div>
-    <div class="group-card"><div class="group-header g-c"><span class="gh-c">C组</span> 巴西 · 摩洛哥 · 苏格兰 · 海地</div></div>
-    <div class="group-card"><div class="group-header g-d"><span class="gh-d">D组</span> 美国 · 巴拉圭 · 澳大利亚 · 土耳其</div></div>
-    <div class="group-card"><div class="group-header g-e"><span class="gh-e">E组</span> 德国 · 科特迪瓦 · 厄瓜多尔 · 库拉索</div></div>
-    <div class="group-card"><div class="group-header g-f"><span class="gh-f">F组</span> 荷兰 · 日本 · 突尼斯 · 瑞典</div></div>
-    <div class="group-card"><div class="group-header g-g"><span class="gh-g">G组</span> 比利时 · 伊朗 · 新西兰 · 埃及</div></div>
-    <div class="group-card"><div class="group-header g-h"><span class="gh-h">H组</span> 西班牙 · 沙特阿拉伯 · 乌拉圭 · 佛得角</div></div>
-    <div class="group-card"><div class="group-header g-i"><span class="gh-i">I组</span> 法国 · 塞内加尔 · 挪威 · 伊拉克</div></div>
-    <div class="group-card"><div class="group-header g-j"><span class="gh-j">J组</span> 阿根廷 · 阿尔及利亚 · 奥地利 · 约旦</div></div>
-    <div class="group-card"><div class="group-header g-k"><span class="gh-k">K组</span> 葡萄牙 · 哥伦比亚 · 乌兹别克斯坦 · 民主刚果</div></div>
-    <div class="group-card"><div class="group-header g-l"><span class="gh-l">L组</span> 英格兰 · 克罗地亚 · 加纳 · 巴拿马</div></div>
+    <div class="group-card"><div class="group-header g-a"><span class="gh-a">A组</span> 🇲🇽墨西哥 · 🇰🇷韩国 · 🇿🇦南非 · 🇳🇱捷克</div></div>
+    <div class="group-card"><div class="group-header g-b"><span class="gh-b">B组</span> 🇨🇦加拿大 · 🇶🇦卡塔尔 · 🇨🇭瑞士 · 🇧🇦波黑</div></div>
+    <div class="group-card"><div class="group-header g-c"><span class="gh-c">C组</span> 🇧🇷巴西 · 🇲🇦摩洛哥 · 🏴󠁧󠁢󠁳󠁣󠁴󠁿苏格兰 · 🇭🇹海地</div></div>
+    <div class="group-card"><div class="group-header g-d"><span class="gh-d">D组</span> 🇺🇸美国 · 🇵🇾巴拉圭 · 🇦🇺澳大利亚 · 🇹🇷土耳其</div></div>
+    <div class="group-card"><div class="group-header g-e"><span class="gh-e">E组</span> 🇩🇪德国 · 🇨🇮科特迪瓦 · 🇪🇨厄瓜多尔 · 🇨🇼库拉索</div></div>
+    <div class="group-card"><div class="group-header g-f"><span class="gh-f">F组</span> 🇳🇱荷兰 · 🇯🇵日本 · 🇹🇳突尼斯 · 🇸🇪瑞典</div></div>
+    <div class="group-card"><div class="group-header g-g"><span class="gh-g">G组</span> 🇧🇪比利时 · 🇮🇷伊朗 · 🇳🇿新西兰 · 🇪🇬埃及</div></div>
+    <div class="group-card"><div class="group-header g-h"><span class="gh-h">H组</span> 🇪🇸西班牙 · 🇸🇦沙特 · 🇺🇾乌拉圭 · 🇨🇻佛得角</div></div>
+    <div class="group-card"><div class="group-header g-i"><span class="gh-i">I组</span> 🇫🇷法国 · 🇸🇳塞内加尔 · 🇳🇴挪威 · 🇮🇶伊拉克</div></div>
+    <div class="group-card"><div class="group-header g-j"><span class="gh-j">J组</span> 🇦🇷阿根廷 · 🇩🇿阿尔及利亚 · 🇦🇹奥地利 · 🇯🇴约旦</div></div>
+    <div class="group-card"><div class="group-header g-k"><span class="gh-k">K组</span> 🇵🇹葡萄牙 · 🇨🇴哥伦比亚 · 🇺🇿乌兹别克 · 🇨🇩民主刚果</div></div>
+    <div class="group-card"><div class="group-header g-l"><span class="gh-l">L组</span> 🏴󠁧󠁢󠁥󠁮󠁧󠁿英格兰 · 🇭🇷克罗地亚 · 🇬🇭加纳 · 🇵🇦巴拿马</div></div>
   </div>
 </div>
 
@@ -383,161 +508,167 @@
 
     <!-- A组 -->
     <div class="group-card">
-      <div class="group-header g-a"><span class="gh-a">⚽ A 组</span> 墨西哥 · 韩国 · 南非 · 捷克</div>
+      <div class="group-header g-a"><span class="gh-a">⚽ A 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/12</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">墨西哥</span><span class="vs">vs</span><span class="team">南非</span></span><span class="match-score" id="score-A1">- : -</span><span class="match-venue">墨西哥城</span></div>
-        <div class="match-row"><span class="match-date">6/12</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">韩国</span><span class="vs">vs</span><span class="team">捷克</span></span><span class="match-score" id="score-A2">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
-        <div class="match-row"><span class="match-date">6/19</span><span class="match-time">00:00</span><span class="match-teams"><span class="team">捷克</span><span class="vs">vs</span><span class="team">南非</span></span><span class="match-score" id="score-A3">- : -</span><span class="match-venue">亚特兰大</span></div>
-        <div class="match-row"><span class="match-date">6/19</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">墨西哥</span><span class="vs">vs</span><span class="team">韩国</span></span><span class="match-score" id="score-A4">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
-        <div class="match-row"><span class="match-date">6/25</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">墨西哥</span><span class="vs">vs</span><span class="team">捷克</span></span><span class="match-score" id="score-A5">- : -</span><span class="match-venue">墨西哥城</span></div>
-        <div class="match-row"><span class="match-date">6/25</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">韩国</span><span class="vs">vs</span><span class="team">南非</span></span><span class="match-score" id="score-A6">- : -</span><span class="match-venue">蒙特雷</span></div>
+        <div class="match-row"><span class="match-date">6/12 周五</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇲🇽 墨西哥</span><span class="vs">vs</span><span class="team">🇿🇦 南非</span></span><span class="match-score" id="score-A1">- : -</span><span class="match-venue">墨西哥城</span></div>
+        <div class="match-row"><span class="match-date">6/12 周五</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇰🇷 韩国</span><span class="vs">vs</span><span class="team">🇳🇱 捷克</span></span><span class="match-score" id="score-A2">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
+        <div class="match-row"><span class="match-date">6/19 周五</span><span class="match-time">00:00</span><span class="match-teams"><span class="team">🇳🇱 捷克</span><span class="vs">vs</span><span class="team">🇿🇦 南非</span></span><span class="match-score" id="score-A3">- : -</span><span class="match-venue">亚特兰大</span></div>
+        <div class="match-row"><span class="match-date">6/19 周五</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇲🇽 墨西哥</span><span class="vs">vs</span><span class="team">🇰🇷 韩国</span></span><span class="match-score" id="score-A4">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
+        <div class="match-row"><span class="match-date">6/25 周四</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇲🇽 墨西哥</span><span class="vs">vs</span><span class="team">🇳🇱 捷克</span></span><span class="match-score" id="score-A5">- : -</span><span class="match-venue">墨西哥城</span></div>
+        <div class="match-row"><span class="match-date">6/25 周四</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇰🇷 韩国</span><span class="vs">vs</span><span class="team">🇿🇦 南非</span></span><span class="match-score" id="score-A6">- : -</span><span class="match-venue">蒙特雷</span></div>
       </div>
     </div>
 
     <!-- B组 -->
     <div class="group-card">
-      <div class="group-header g-b"><span class="gh-b">⚽ B 组</span> 加拿大 · 卡塔尔 · 瑞士 · 波黑</div>
+      <div class="group-header g-b"><span class="gh-b">⚽ B 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/13</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">加拿大</span><span class="vs">vs</span><span class="team">波黑</span></span><span class="match-score" id="score-B1">- : -</span><span class="match-venue">多伦多</span></div>
-        <div class="match-row"><span class="match-date">6/14</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">卡塔尔</span><span class="vs">vs</span><span class="team">瑞士</span></span><span class="match-score" id="score-B2">- : -</span><span class="match-venue">旧金山</span></div>
-        <div class="match-row"><span class="match-date">6/19</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">瑞士</span><span class="vs">vs</span><span class="team">波黑</span></span><span class="match-score" id="score-B3">- : -</span><span class="match-venue">洛杉矶</span></div>
-        <div class="match-row"><span class="match-date">6/19</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">加拿大</span><span class="vs">vs</span><span class="team">卡塔尔</span></span><span class="match-score" id="score-B4">- : -</span><span class="match-venue">温哥华</span></div>
-        <div class="match-row"><span class="match-date">6/25</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">瑞士</span><span class="vs">vs</span><span class="team">加拿大</span></span><span class="match-score" id="score-B5">- : -</span><span class="match-venue">温哥华</span></div>
-        <div class="match-row"><span class="match-date">6/25</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">波黑</span><span class="vs">vs</span><span class="team">卡塔尔</span></span><span class="match-score" id="score-B6">- : -</span><span class="match-venue">西雅图</span></div>
+        <div class="match-row"><span class="match-date">6/13 周六</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇨🇦 加拿大</span><span class="vs">vs</span><span class="team">🇧🇦 波黑</span></span><span class="match-score" id="score-B1">- : -</span><span class="match-venue">多伦多</span></div>
+        <div class="match-row"><span class="match-date">6/14 周日</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇶🇦 卡塔尔</span><span class="vs">vs</span><span class="team">🇨🇭 瑞士</span></span><span class="match-score" id="score-B2">- : -</span><span class="match-venue">旧金山</span></div>
+        <div class="match-row"><span class="match-date">6/19 周五</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇨🇭 瑞士</span><span class="vs">vs</span><span class="team">🇧🇦 波黑</span></span><span class="match-score" id="score-B3">- : -</span><span class="match-venue">洛杉矶</span></div>
+        <div class="match-row"><span class="match-date">6/19 周五</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇨🇦 加拿大</span><span class="vs">vs</span><span class="team">🇶🇦 卡塔尔</span></span><span class="match-score" id="score-B4">- : -</span><span class="match-venue">温哥华</span></div>
+        <div class="match-row"><span class="match-date">6/25 周四</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇨🇭 瑞士</span><span class="vs">vs</span><span class="team">🇨🇦 加拿大</span></span><span class="match-score" id="score-B5">- : -</span><span class="match-venue">温哥华</span></div>
+        <div class="match-row"><span class="match-date">6/25 周四</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇧🇦 波黑</span><span class="vs">vs</span><span class="team">🇶🇦 卡塔尔</span></span><span class="match-score" id="score-B6">- : -</span><span class="match-venue">西雅图</span></div>
       </div>
     </div>
 
     <!-- C组 -->
     <div class="group-card">
-      <div class="group-header g-c"><span class="gh-c">⚽ C 组</span> 巴西 · 摩洛哥 · 苏格兰 · 海地</div>
+      <div class="group-header g-c"><span class="gh-c">⚽ C 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/14</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">巴西</span><span class="vs">vs</span><span class="team">摩洛哥</span></span><span class="match-score" id="score-C1">- : -</span><span class="match-venue">纽约</span></div>
-        <div class="match-row"><span class="match-date">6/14</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">海地</span><span class="vs">vs</span><span class="team">苏格兰</span></span><span class="match-score" id="score-C2">- : -</span><span class="match-venue">波士顿</span></div>
-        <div class="match-row"><span class="match-date">6/20</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">苏格兰</span><span class="vs">vs</span><span class="team">摩洛哥</span></span><span class="match-score" id="score-C3">- : -</span><span class="match-venue">波士顿</span></div>
-        <div class="match-row"><span class="match-date">6/20</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">巴西</span><span class="vs">vs</span><span class="team">海地</span></span><span class="match-score" id="score-C4">- : -</span><span class="match-venue">费城</span></div>
-        <div class="match-row"><span class="match-date">6/25</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">摩洛哥</span><span class="vs">vs</span><span class="team">海地</span></span><span class="match-score" id="score-C5">- : -</span><span class="match-venue">亚特兰大</span></div>
-        <div class="match-row"><span class="match-date">6/25</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">苏格兰</span><span class="vs">vs</span><span class="team">巴西</span></span><span class="match-score" id="score-C6">- : -</span><span class="match-venue">迈阿密</span></div>
+        <div class="match-row"><span class="match-date">6/14 周日</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇧🇷 巴西</span><span class="vs">vs</span><span class="team">🇲🇦 摩洛哥</span></span><span class="match-score" id="score-C1">- : -</span><span class="match-venue">纽约</span></div>
+        <div class="match-row"><span class="match-date">6/14 周日</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇭🇹 海地</span><span class="vs">vs</span><span class="team">🏴󠁧󠁢󠁳󠁣󠁴󠁿 苏格兰</span></span><span class="match-score" id="score-C2">- : -</span><span class="match-venue">波士顿</span></div>
+        <div class="match-row"><span class="match-date">6/20 周六</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🏴󠁧󠁢󠁳󠁣󠁴󠁿 苏格兰</span><span class="vs">vs</span><span class="team">🇲🇦 摩洛哥</span></span><span class="match-score" id="score-C3">- : -</span><span class="match-venue">波士顿</span></div>
+        <div class="match-row"><span class="match-date">6/20 周六</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇧🇷 巴西</span><span class="vs">vs</span><span class="team">🇭🇹 海地</span></span><span class="match-score" id="score-C4">- : -</span><span class="match-venue">费城</span></div>
+        <div class="match-row"><span class="match-date">6/25 周四</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇲🇦 摩洛哥</span><span class="vs">vs</span><span class="team">🇭🇹 海地</span></span><span class="match-score" id="score-C5">- : -</span><span class="match-venue">亚特兰大</span></div>
+        <div class="match-row"><span class="match-date">6/25 周四</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🏴󠁧󠁢󠁳󠁣󠁴󠁿 苏格兰</span><span class="vs">vs</span><span class="team">🇧🇷 巴西</span></span><span class="match-score" id="score-C6">- : -</span><span class="match-venue">迈阿密</span></div>
       </div>
     </div>
 
     <!-- D组 -->
     <div class="group-card">
-      <div class="group-header g-d"><span class="gh-d">⚽ D 组</span> 美国 · 巴拉圭 · 澳大利亚 · 土耳其</div>
+      <div class="group-header g-d"><span class="gh-d">⚽ D 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/13</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">美国</span><span class="vs">vs</span><span class="team">巴拉圭</span></span><span class="match-score" id="score-D1">- : -</span><span class="match-venue">洛杉矶</span></div>
-        <div class="match-row"><span class="match-date">6/14</span><span class="match-time">12:00</span><span class="match-teams"><span class="team">澳大利亚</span><span class="vs">vs</span><span class="team">土耳其</span></span><span class="match-score" id="score-D2">- : -</span><span class="match-venue">纽约</span></div>
-        <div class="match-row"><span class="match-date">6/20</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">美国</span><span class="vs">vs</span><span class="team">澳大利亚</span></span><span class="match-score" id="score-D3">- : -</span><span class="match-venue">西雅图</span></div>
-        <div class="match-row"><span class="match-date">6/20</span><span class="match-time">12:00</span><span class="match-teams"><span class="team">土耳其</span><span class="vs">vs</span><span class="team">巴拉圭</span></span><span class="match-score" id="score-D4">- : -</span><span class="match-venue">旧金山</span></div>
-        <div class="match-row"><span class="match-date">6/26</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">美国</span><span class="vs">vs</span><span class="team">土耳其</span></span><span class="match-score" id="score-D5">- : -</span><span class="match-venue">洛杉矶</span></div>
-        <div class="match-row"><span class="match-date">6/26</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">巴拉圭</span><span class="vs">vs</span><span class="team">澳大利亚</span></span><span class="match-score" id="score-D6">- : -</span><span class="match-venue">旧金山</span></div>
+        <div class="match-row"><span class="match-date">6/13 周六</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇺🇸 美国</span><span class="vs">vs</span><span class="team">🇵🇾 巴拉圭</span></span><span class="match-score" id="score-D1">- : -</span><span class="match-venue">洛杉矶</span></div>
+        <div class="match-row"><span class="match-date">6/14 周日</span><span class="match-time">12:00</span><span class="match-teams"><span class="team">🇦🇺 澳大利亚</span><span class="vs">vs</span><span class="team">🇹🇷 土耳其</span></span><span class="match-score" id="score-D2">- : -</span><span class="match-venue">纽约</span></div>
+        <div class="match-row"><span class="match-date">6/20 周六</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇺🇸 美国</span><span class="vs">vs</span><span class="team">🇦🇺 澳大利亚</span></span><span class="match-score" id="score-D3">- : -</span><span class="match-venue">西雅图</span></div>
+        <div class="match-row"><span class="match-date">6/20 周六</span><span class="match-time">12:00</span><span class="match-teams"><span class="team">🇹🇷 土耳其</span><span class="vs">vs</span><span class="team">🇵🇾 巴拉圭</span></span><span class="match-score" id="score-D4">- : -</span><span class="match-venue">旧金山</span></div>
+        <div class="match-row"><span class="match-date">6/26 周五</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇺🇸 美国</span><span class="vs">vs</span><span class="team">🇹🇷 土耳其</span></span><span class="match-score" id="score-D5">- : -</span><span class="match-venue">洛杉矶</span></div>
+        <div class="match-row"><span class="match-date">6/26 周五</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇵🇾 巴拉圭</span><span class="vs">vs</span><span class="team">🇦🇺 澳大利亚</span></span><span class="match-score" id="score-D6">- : -</span><span class="match-venue">旧金山</span></div>
       </div>
     </div>
 
     <!-- E组 -->
     <div class="group-card">
-      <div class="group-header g-e"><span class="gh-e">⚽ E 组</span> 德国 · 科特迪瓦 · 厄瓜多尔 · 库拉索</div>
+      <div class="group-header g-e"><span class="gh-e">⚽ E 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/15</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">德国</span><span class="vs">vs</span><span class="team">库拉索</span></span><span class="match-score" id="score-E1">- : -</span><span class="match-venue">休斯顿</span></div>
-        <div class="match-row"><span class="match-date">6/15</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">科特迪瓦</span><span class="vs">vs</span><span class="team">厄瓜多尔</span></span><span class="match-score" id="score-E2">- : -</span><span class="match-venue">费城</span></div>
-        <div class="match-row"><span class="match-date">6/21</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">德国</span><span class="vs">vs</span><span class="team">科特迪瓦</span></span><span class="match-score" id="score-E3">- : -</span><span class="match-venue">多伦多</span></div>
-        <div class="match-row"><span class="match-date">6/21</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">厄瓜多尔</span><span class="vs">vs</span><span class="team">库拉索</span></span><span class="match-score" id="score-E4">- : -</span><span class="match-venue">堪萨斯城</span></div>
-        <div class="match-row"><span class="match-date">6/26</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">厄瓜多尔</span><span class="vs">vs</span><span class="team">德国</span></span><span class="match-score" id="score-E5">- : -</span><span class="match-venue">纽约</span></div>
-        <div class="match-row"><span class="match-date">6/26</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">库拉索</span><span class="vs">vs</span><span class="team">科特迪瓦</span></span><span class="match-score" id="score-E6">- : -</span><span class="match-venue">费城</span></div>
+        <div class="match-row"><span class="match-date">6/15 周一</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">🇩🇪 德国</span><span class="vs">vs</span><span class="team">🇨🇼 库拉索</span></span><span class="match-score" id="score-E1">- : -</span><span class="match-venue">休斯顿</span></div>
+        <div class="match-row"><span class="match-date">6/15 周一</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">🇨🇮 科特迪瓦</span><span class="vs">vs</span><span class="team">🇪🇨 厄瓜多尔</span></span><span class="match-score" id="score-E2">- : -</span><span class="match-venue">费城</span></div>
+        <div class="match-row"><span class="match-date">6/21 周日</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">🇩🇪 德国</span><span class="vs">vs</span><span class="team">🇨🇮 科特迪瓦</span></span><span class="match-score" id="score-E3">- : -</span><span class="match-venue">多伦多</span></div>
+        <div class="match-row"><span class="match-date">6/21 周日</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">🇪🇨 厄瓜多尔</span><span class="vs">vs</span><span class="team">🇨🇼 库拉索</span></span><span class="match-score" id="score-E4">- : -</span><span class="match-venue">堪萨斯城</span></div>
+        <div class="match-row"><span class="match-date">6/26 周五</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇪🇨 厄瓜多尔</span><span class="vs">vs</span><span class="team">🇩🇪 德国</span></span><span class="match-score" id="score-E5">- : -</span><span class="match-venue">纽约</span></div>
+        <div class="match-row"><span class="match-date">6/26 周五</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇨🇼 库拉索</span><span class="vs">vs</span><span class="team">🇨🇮 科特迪瓦</span></span><span class="match-score" id="score-E6">- : -</span><span class="match-venue">费城</span></div>
       </div>
     </div>
 
     <!-- F组 -->
     <div class="group-card">
-      <div class="group-header g-f"><span class="gh-f">⚽ F 组</span> 荷兰 · 日本 · 突尼斯 · 瑞典</div>
+      <div class="group-header g-f"><span class="gh-f">⚽ F 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/15</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">荷兰</span><span class="vs">vs</span><span class="team">日本</span></span><span class="match-score" id="score-F1">- : -</span><span class="match-venue">达拉斯</span></div>
-        <div class="match-row"><span class="match-date">6/15</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">瑞典</span><span class="vs">vs</span><span class="team">突尼斯</span></span><span class="match-score" id="score-F2">- : -</span><span class="match-venue">蒙特雷</span></div>
-        <div class="match-row"><span class="match-date">6/21</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">荷兰</span><span class="vs">vs</span><span class="team">瑞典</span></span><span class="match-score" id="score-F3">- : -</span><span class="match-venue">休斯顿</span></div>
-        <div class="match-row"><span class="match-date">6/21</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">突尼斯</span><span class="vs">vs</span><span class="team">日本</span></span><span class="match-score" id="score-F4">- : -</span><span class="match-venue">蒙特雷</span></div>
-        <div class="match-row"><span class="match-date">6/26</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">日本</span><span class="vs">vs</span><span class="team">瑞典</span></span><span class="match-score" id="score-F5">- : -</span><span class="match-venue">达拉斯</span></div>
-        <div class="match-row"><span class="match-date">6/26</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">突尼斯</span><span class="vs">vs</span><span class="team">荷兰</span></span><span class="match-score" id="score-F6">- : -</span><span class="match-venue">堪萨斯城</span></div>
+        <div class="match-row"><span class="match-date">6/15 周一</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">🇳🇱 荷兰</span><span class="vs">vs</span><span class="team">🇯🇵 日本</span></span><span class="match-score" id="score-F1">- : -</span><span class="match-venue">达拉斯</span></div>
+        <div class="match-row"><span class="match-date">6/15 周一</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇸🇪 瑞典</span><span class="vs">vs</span><span class="team">🇹🇳 突尼斯</span></span><span class="match-score" id="score-F2">- : -</span><span class="match-venue">蒙特雷</span></div>
+        <div class="match-row"><span class="match-date">6/21 周日</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">🇳🇱 荷兰</span><span class="vs">vs</span><span class="team">🇸🇪 瑞典</span></span><span class="match-score" id="score-F3">- : -</span><span class="match-venue">休斯顿</span></div>
+        <div class="match-row"><span class="match-date">6/21 周日</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">🇹🇳 突尼斯</span><span class="vs">vs</span><span class="team">🇯🇵 日本</span></span><span class="match-score" id="score-F4">- : -</span><span class="match-venue">蒙特雷</span></div>
+        <div class="match-row"><span class="match-date">6/26 周五</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">🇯🇵 日本</span><span class="vs">vs</span><span class="team">🇸🇪 瑞典</span></span><span class="match-score" id="score-F5">- : -</span><span class="match-venue">达拉斯</span></div>
+        <div class="match-row"><span class="match-date">6/26 周五</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">🇹🇳 突尼斯</span><span class="vs">vs</span><span class="team">🇳🇱 荷兰</span></span><span class="match-score" id="score-F6">- : -</span><span class="match-venue">堪萨斯城</span></div>
       </div>
     </div>
 
     <!-- G组 -->
     <div class="group-card">
-      <div class="group-header g-g"><span class="gh-g">⚽ G 组</span> 比利时 · 伊朗 · 新西兰 · 埃及</div>
+      <div class="group-header g-g"><span class="gh-g">⚽ G 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/16</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">比利时</span><span class="vs">vs</span><span class="team">埃及</span></span><span class="match-score" id="score-G1">- : -</span><span class="match-venue">西雅图</span></div>
-        <div class="match-row"><span class="match-date">6/16</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">伊朗</span><span class="vs">vs</span><span class="team">新西兰</span></span><span class="match-score" id="score-G2">- : -</span><span class="match-venue">洛杉矶</span></div>
-        <div class="match-row"><span class="match-date">6/22</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">比利时</span><span class="vs">vs</span><span class="team">伊朗</span></span><span class="match-score" id="score-G3">- : -</span><span class="match-venue">洛杉矶</span></div>
-        <div class="match-row"><span class="match-date">6/22</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">新西兰</span><span class="vs">vs</span><span class="team">埃及</span></span><span class="match-score" id="score-G4">- : -</span><span class="match-venue">温哥华</span></div>
-        <div class="match-row"><span class="match-date">6/27</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">新西兰</span><span class="vs">vs</span><span class="team">比利时</span></span><span class="match-score" id="score-G5">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
-        <div class="match-row"><span class="match-date">6/27</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">埃及</span><span class="vs">vs</span><span class="team">伊朗</span></span><span class="match-score" id="score-G6">- : -</span><span class="match-venue">休斯顿</span></div>
+        <div class="match-row"><span class="match-date">6/16 周二</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇧🇪 比利时</span><span class="vs">vs</span><span class="team">🇪🇬 埃及</span></span><span class="match-score" id="score-G1">- : -</span><span class="match-venue">西雅图</span></div>
+        <div class="match-row"><span class="match-date">6/16 周二</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇮🇷 伊朗</span><span class="vs">vs</span><span class="team">🇳🇿 新西兰</span></span><span class="match-score" id="score-G2">- : -</span><span class="match-venue">洛杉矶</span></div>
+        <div class="match-row"><span class="match-date">6/22 周一</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇧🇪 比利时</span><span class="vs">vs</span><span class="team">🇮🇷 伊朗</span></span><span class="match-score" id="score-G3">- : -</span><span class="match-venue">洛杉矶</span></div>
+        <div class="match-row"><span class="match-date">6/22 周一</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇳🇿 新西兰</span><span class="vs">vs</span><span class="team">🇪🇬 埃及</span></span><span class="match-score" id="score-G4">- : -</span><span class="match-venue">温哥华</span></div>
+        <div class="match-row"><span class="match-date">6/27 周六</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">🇳🇿 新西兰</span><span class="vs">vs</span><span class="team">🇧🇪 比利时</span></span><span class="match-score" id="score-G5">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
+        <div class="match-row"><span class="match-date">6/27 周六</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">🇪🇬 埃及</span><span class="vs">vs</span><span class="team">🇮🇷 伊朗</span></span><span class="match-score" id="score-G6">- : -</span><span class="match-venue">休斯顿</span></div>
       </div>
     </div>
 
     <!-- H组 -->
     <div class="group-card">
-      <div class="group-header g-h"><span class="gh-h">⚽ H 组</span> 西班牙 · 沙特阿拉伯 · 乌拉圭 · 佛得角</div>
+      <div class="group-header g-h"><span class="gh-h">⚽ H 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/16</span><span class="match-time">00:00</span><span class="match-teams"><span class="team">西班牙</span><span class="vs">vs</span><span class="team">佛得角</span></span><span class="match-score" id="score-H1">- : -</span><span class="match-venue">亚特兰大</span></div>
-        <div class="match-row"><span class="match-date">6/16</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">沙特阿拉伯</span><span class="vs">vs</span><span class="team">乌拉圭</span></span><span class="match-score" id="score-H2">- : -</span><span class="match-venue">迈阿密</span></div>
-        <div class="match-row"><span class="match-date">6/22</span><span class="match-time">00:00</span><span class="match-teams"><span class="team">西班牙</span><span class="vs">vs</span><span class="team">沙特阿拉伯</span></span><span class="match-score" id="score-H3">- : -</span><span class="match-venue">亚特兰大</span></div>
-        <div class="match-row"><span class="match-date">6/22</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">乌拉圭</span><span class="vs">vs</span><span class="team">佛得角</span></span><span class="match-score" id="score-H4">- : -</span><span class="match-venue">迈阿密</span></div>
-        <div class="match-row"><span class="match-date">6/27</span><span class="match-time">08:00</span><span class="match-teams"><span class="team">乌拉圭</span><span class="vs">vs</span><span class="team">西班牙</span></span><span class="match-score" id="score-H5">- : -</span><span class="match-venue">温哥华</span></div>
-        <div class="match-row"><span class="match-date">6/27</span><span class="match-time">08:00</span><span class="match-teams"><span class="team">佛得角</span><span class="vs">vs</span><span class="team">沙特阿拉伯</span></span><span class="match-score" id="score-H6">- : -</span><span class="match-venue">西雅图</span></div>
+        <div class="match-row"><span class="match-date">6/16 周二</span><span class="match-time">00:00</span><span class="match-teams"><span class="team">🇪🇸 西班牙</span><span class="vs">vs</span><span class="team">🇨🇻 佛得角</span></span><span class="match-score" id="score-H1">- : -</span><span class="match-venue">亚特兰大</span></div>
+        <div class="match-row"><span class="match-date">6/16 周二</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇸🇦 沙特</span><span class="vs">vs</span><span class="team">🇺🇾 乌拉圭</span></span><span class="match-score" id="score-H2">- : -</span><span class="match-venue">迈阿密</span></div>
+        <div class="match-row"><span class="match-date">6/22 周一</span><span class="match-time">00:00</span><span class="match-teams"><span class="team">🇪🇸 西班牙</span><span class="vs">vs</span><span class="team">🇸🇦 沙特</span></span><span class="match-score" id="score-H3">- : -</span><span class="match-venue">亚特兰大</span></div>
+        <div class="match-row"><span class="match-date">6/22 周一</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇺🇾 乌拉圭</span><span class="vs">vs</span><span class="team">🇨🇻 佛得角</span></span><span class="match-score" id="score-H4">- : -</span><span class="match-venue">迈阿密</span></div>
+        <div class="match-row"><span class="match-date">6/27 周六</span><span class="match-time">08:00</span><span class="match-teams"><span class="team">🇺🇾 乌拉圭</span><span class="vs">vs</span><span class="team">🇪🇸 西班牙</span></span><span class="match-score" id="score-H5">- : -</span><span class="match-venue">温哥华</span></div>
+        <div class="match-row"><span class="match-date">6/27 周六</span><span class="match-time">08:00</span><span class="match-teams"><span class="team">🇨🇻 佛得角</span><span class="vs">vs</span><span class="team">🇸🇦 沙特</span></span><span class="match-score" id="score-H6">- : -</span><span class="match-venue">西雅图</span></div>
       </div>
     </div>
 
     <!-- I组 -->
     <div class="group-card">
-      <div class="group-header g-i"><span class="gh-i">⚽ I 组</span> 法国 · 塞内加尔 · 挪威 · 伊拉克</div>
+      <div class="group-header g-i"><span class="gh-i">⚽ I 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/17</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">法国</span><span class="vs">vs</span><span class="team">塞内加尔</span></span><span class="match-score" id="score-I1">- : -</span><span class="match-venue">纽约</span></div>
-        <div class="match-row"><span class="match-date">6/17</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">伊拉克</span><span class="vs">vs</span><span class="team">挪威</span></span><span class="match-score" id="score-I2">- : -</span><span class="match-venue">波士顿</span></div>
-        <div class="match-row"><span class="match-date">6/23</span><span class="match-time">05:00</span><span class="match-teams"><span class="team">法国</span><span class="vs">vs</span><span class="team">伊拉克</span></span><span class="match-score" id="score-I3">- : -</span><span class="match-venue">费城</span></div>
-        <div class="match-row"><span class="match-date">6/23</span><span class="match-time">08:00</span><span class="match-teams"><span class="team">挪威</span><span class="vs">vs</span><span class="team">塞内加尔</span></span><span class="match-score" id="score-I4">- : -</span><span class="match-venue">纽约</span></div>
-        <div class="match-row"><span class="match-date">6/27</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">挪威</span><span class="vs">vs</span><span class="team">法国</span></span><span class="match-score" id="score-I5">- : -</span><span class="match-venue">波士顿</span></div>
-        <div class="match-row"><span class="match-date">6/27</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">塞内加尔</span><span class="vs">vs</span><span class="team">伊拉克</span></span><span class="match-score" id="score-I6">- : -</span><span class="match-venue">多伦多</span></div>
+        <div class="match-row"><span class="match-date">6/17 周三</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇫🇷 法国</span><span class="vs">vs</span><span class="team">🇸🇳 塞内加尔</span></span><span class="match-score" id="score-I1">- : -</span><span class="match-venue">纽约</span></div>
+        <div class="match-row"><span class="match-date">6/17 周三</span><span class="match-time">06:00</span><span class="match-teams"><span class="team">🇮🇶 伊拉克</span><span class="vs">vs</span><span class="team">🇳🇴 挪威</span></span><span class="match-score" id="score-I2">- : -</span><span class="match-venue">波士顿</span></div>
+        <div class="match-row"><span class="match-date">6/23 周二</span><span class="match-time">05:00</span><span class="match-teams"><span class="team">🇫🇷 法国</span><span class="vs">vs</span><span class="team">🇮🇶 伊拉克</span></span><span class="match-score" id="score-I3">- : -</span><span class="match-venue">费城</span></div>
+        <div class="match-row"><span class="match-date">6/23 周二</span><span class="match-time">08:00</span><span class="match-teams"><span class="team">🇳🇴 挪威</span><span class="vs">vs</span><span class="team">🇸🇳 塞内加尔</span></span><span class="match-score" id="score-I4">- : -</span><span class="match-venue">纽约</span></div>
+        <div class="match-row"><span class="match-date">6/27 周六</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇳🇴 挪威</span><span class="vs">vs</span><span class="team">🇫🇷 法国</span></span><span class="match-score" id="score-I5">- : -</span><span class="match-venue">波士顿</span></div>
+        <div class="match-row"><span class="match-date">6/27 周六</span><span class="match-time">03:00</span><span class="match-teams"><span class="team">🇸🇳 塞内加尔</span><span class="vs">vs</span><span class="team">🇮🇶 伊拉克</span></span><span class="match-score" id="score-I6">- : -</span><span class="match-venue">多伦多</span></div>
       </div>
     </div>
 
     <!-- J组 -->
     <div class="group-card">
-      <div class="group-header g-j"><span class="gh-j">⚽ J 组</span> 阿根廷 · 阿尔及利亚 · 奥地利 · 约旦</div>
+      <div class="group-header g-j"><span class="gh-j">⚽ J 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/17</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">阿根廷</span><span class="vs">vs</span><span class="team">阿尔及利亚</span></span><span class="match-score" id="score-J1">- : -</span><span class="match-venue">堪萨斯城</span></div>
-        <div class="match-row"><span class="match-date">6/17</span><span class="match-time">12:00</span><span class="match-teams"><span class="team">奥地利</span><span class="vs">vs</span><span class="team">约旦</span></span><span class="match-score" id="score-J2">- : -</span><span class="match-venue">旧金山</span></div>
-        <div class="match-row"><span class="match-date">6/23</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">阿根廷</span><span class="vs">vs</span><span class="team">奥地利</span></span><span class="match-score" id="score-J3">- : -</span><span class="match-venue">达拉斯</span></div>
-        <div class="match-row"><span class="match-date">6/23</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">约旦</span><span class="vs">vs</span><span class="team">阿尔及利亚</span></span><span class="match-score" id="score-J4">- : -</span><span class="match-venue">旧金山</span></div>
-        <div class="match-row"><span class="match-date">6/28</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">约旦</span><span class="vs">vs</span><span class="team">阿根廷</span></span><span class="match-score" id="score-J5">- : -</span><span class="match-venue">堪萨斯城</span></div>
-        <div class="match-row"><span class="match-date">6/28</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">阿尔及利亚</span><span class="vs">vs</span><span class="team">奥地利</span></span><span class="match-score" id="score-J6">- : -</span><span class="match-venue">达拉斯</span></div>
+        <div class="match-row"><span class="match-date">6/17 周三</span><span class="match-time">09:00</span><span class="match-teams"><span class="team">🇦🇷 阿根廷</span><span class="vs">vs</span><span class="team">🇩🇿 阿尔及利亚</span></span><span class="match-score" id="score-J1">- : -</span><span class="match-venue">堪萨斯城</span></div>
+        <div class="match-row"><span class="match-date">6/17 周三</span><span class="match-time">12:00</span><span class="match-teams"><span class="team">🇦🇹 奥地利</span><span class="vs">vs</span><span class="team">🇯🇴 约旦</span></span><span class="match-score" id="score-J2">- : -</span><span class="match-venue">旧金山</span></div>
+        <div class="match-row"><span class="match-date">6/23 周二</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">🇦🇷 阿根廷</span><span class="vs">vs</span><span class="team">🇦🇹 奥地利</span></span><span class="match-score" id="score-J3">- : -</span><span class="match-venue">达拉斯</span></div>
+        <div class="match-row"><span class="match-date">6/23 周二</span><span class="match-time">11:00</span><span class="match-teams"><span class="team">🇯🇴 约旦</span><span class="vs">vs</span><span class="team">🇩🇿 阿尔及利亚</span></span><span class="match-score" id="score-J4">- : -</span><span class="match-venue">旧金山</span></div>
+        <div class="match-row"><span class="match-date">6/28 周日</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇯🇴 约旦</span><span class="vs">vs</span><span class="team">🇦🇷 阿根廷</span></span><span class="match-score" id="score-J5">- : -</span><span class="match-venue">堪萨斯城</span></div>
+        <div class="match-row"><span class="match-date">6/28 周日</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇩🇿 阿尔及利亚</span><span class="vs">vs</span><span class="team">🇦🇹 奥地利</span></span><span class="match-score" id="score-J6">- : -</span><span class="match-venue">达拉斯</span></div>
       </div>
     </div>
 
     <!-- K组 -->
     <div class="group-card">
-      <div class="group-header g-k"><span class="gh-k">⚽ K 组</span> 葡萄牙 · 哥伦比亚 · 乌兹别克斯坦 · 民主刚果</div>
+      <div class="group-header g-k"><span class="gh-k">⚽ K 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/18</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">葡萄牙</span><span class="vs">vs</span><span class="team">民主刚果</span></span><span class="match-score" id="score-K1">- : -</span><span class="match-venue">休斯顿</span></div>
-        <div class="match-row"><span class="match-date">6/18</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">乌兹别克斯坦</span><span class="vs">vs</span><span class="team">哥伦比亚</span></span><span class="match-score" id="score-K2">- : -</span><span class="match-venue">墨西哥城</span></div>
-        <div class="match-row"><span class="match-date">6/24</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">葡萄牙</span><span class="vs">vs</span><span class="team">乌兹别克斯坦</span></span><span class="match-score" id="score-K3">- : -</span><span class="match-venue">休斯顿</span></div>
-        <div class="match-row"><span class="match-date">6/24</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">哥伦比亚</span><span class="vs">vs</span><span class="team">民主刚果</span></span><span class="match-score" id="score-K4">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
-        <div class="match-row"><span class="match-date">6/28</span><span class="match-time">07:30</span><span class="match-teams"><span class="team">哥伦比亚</span><span class="vs">vs</span><span class="team">葡萄牙</span></span><span class="match-score" id="score-K5">- : -</span><span class="match-venue">迈阿密</span></div>
-        <div class="match-row"><span class="match-date">6/28</span><span class="match-time">07:30</span><span class="match-teams"><span class="team">乌兹别克斯坦</span><span class="vs">vs</span><span class="team">民主刚果</span></span><span class="match-score" id="score-K6">- : -</span><span class="match-venue">亚特兰大</span></div>
+        <div class="match-row"><span class="match-date">6/18 周四</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">🇵🇹 葡萄牙</span><span class="vs">vs</span><span class="team">🇨🇩 民主刚果</span></span><span class="match-score" id="score-K1">- : -</span><span class="match-venue">休斯顿</span></div>
+        <div class="match-row"><span class="match-date">6/18 周四</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇺🇿 乌兹别克</span><span class="vs">vs</span><span class="team">🇨🇴 哥伦比亚</span></span><span class="match-score" id="score-K2">- : -</span><span class="match-venue">墨西哥城</span></div>
+        <div class="match-row"><span class="match-date">6/24 周三</span><span class="match-time">01:00</span><span class="match-teams"><span class="team">🇵🇹 葡萄牙</span><span class="vs">vs</span><span class="team">🇺🇿 乌兹别克</span></span><span class="match-score" id="score-K3">- : -</span><span class="match-venue">休斯顿</span></div>
+        <div class="match-row"><span class="match-date">6/24 周三</span><span class="match-time">10:00</span><span class="match-teams"><span class="team">🇨🇴 哥伦比亚</span><span class="vs">vs</span><span class="team">🇨🇩 民主刚果</span></span><span class="match-score" id="score-K4">- : -</span><span class="match-venue">瓜达拉哈拉</span></div>
+        <div class="match-row"><span class="match-date">6/28 周日</span><span class="match-time">07:30</span><span class="match-teams"><span class="team">🇨🇴 哥伦比亚</span><span class="vs">vs</span><span class="team">🇵🇹 葡萄牙</span></span><span class="match-score" id="score-K5">- : -</span><span class="match-venue">迈阿密</span></div>
+        <div class="match-row"><span class="match-date">6/28 周日</span><span class="match-time">07:30</span><span class="match-teams"><span class="team">🇺🇿 乌兹别克</span><span class="vs">vs</span><span class="team">🇨🇩 民主刚果</span></span><span class="match-score" id="score-K6">- : -</span><span class="match-venue">亚特兰大</span></div>
       </div>
     </div>
 
     <!-- L组 -->
     <div class="group-card">
-      <div class="group-header g-l"><span class="gh-l">⚽ L 组</span> 英格兰 · 克罗地亚 · 加纳 · 巴拿马</div>
+      <div class="group-header g-l"><span class="gh-l">⚽ L 组</span></div>
       <div class="group-body">
-        <div class="match-row"><span class="match-date">6/18</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">英格兰</span><span class="vs">vs</span><span class="team">克罗地亚</span></span><span class="match-score" id="score-L1">- : -</span><span class="match-venue">达拉斯</span></div>
-        <div class="match-row"><span class="match-date">6/18</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">加纳</span><span class="vs">vs</span><span class="team">巴拿马</span></span><span class="match-score" id="score-L2">- : -</span><span class="match-venue">多伦多</span></div>
-        <div class="match-row"><span class="match-date">6/24</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">英格兰</span><span class="vs">vs</span><span class="team">加纳</span></span><span class="match-score" id="score-L3">- : -</span><span class="match-venue">波士顿</span></div>
-        <div class="match-row"><span class="match-date">6/24</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">巴拿马</span><span class="vs">vs</span><span class="team">克罗地亚</span></span><span class="match-score" id="score-L4">- : -</span><span class="match-venue">多伦多</span></div>
-        <div class="match-row"><span class="match-date">6/28</span><span class="match-time">05:00</span><span class="match-teams"><span class="team">巴拿马</span><span class="vs">vs</span><span class="team">英格兰</span></span><span class="match-score" id="score-L5">- : -</span><span class="match-venue">纽约</span></div>
-        <div class="match-row"><span class="match-date">6/28</span><span class="match-time">05:00</span><span class="match-teams"><span class="team">克罗地亚</span><span class="vs">vs</span><span class="team">加纳</span></span><span class="match-score" id="score-L6">- : -</span><span class="match-venue">费城</span></div>
+        <div class="match-row"><span class="match-date">6/18 周四</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">🏴󠁧󠁢󠁥󠁮󠁧󠁿 英格兰</span><span class="vs">vs</span><span class="team">🇭🇷 克罗地亚</span></span><span class="match-score" id="score-L1">- : -</span><span class="match-venue">达拉斯</span></div>
+        <div class="match-row"><span class="match-date">6/18 周四</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">🇬🇭 加纳</span><span class="vs">vs</span><span class="team">🇵🇦 巴拿马</span></span><span class="match-score" id="score-L2">- : -</span><span class="match-venue">多伦多</span></div>
+        <div class="match-row"><span class="match-date">6/24 周三</span><span class="match-time">04:00</span><span class="match-teams"><span class="team">🏴󠁧󠁢󠁥󠁮󠁧󠁿 英格兰</span><span class="vs">vs</span><span class="team">🇬🇭 加纳</span></span><span class="match-score" id="score-L3">- : -</span><span class="match-venue">波士顿</span></div>
+        <div class="match-row"><span class="match-date">6/24 周三</span><span class="match-time">07:00</span><span class="match-teams"><span class="team">🇵🇦 巴拿马</span><span class="vs">vs</span><span class="team">🇭🇷 克罗地亚</span></span><span class="match-score" id="score-L4">- : -</span><span class="match-venue">多伦多</span></div>
+        <div class="match-row"><span class="match-date">6/28 周日</span><span class="match-time">05:00</span><span class="match-teams"><span class="team">🇵🇦 巴拿马</span><span class="vs">vs</span><span class="team">🏴󠁧󠁢󠁥󠁮󠁧󠁿 英格兰</span></span><span class="match-score" id="score-L5">- : -</span><span class="match-venue">纽约</span></div>
+        <div class="match-row"><span class="match-date">6/28 周日</span><span class="match-time">05:00</span><span class="match-teams"><span class="team">🇭🇷 克罗地亚</span><span class="vs">vs</span><span class="team">🇬🇭 加纳</span></span><span class="match-score" id="score-L6">- : -</span><span class="match-venue">费城</span></div>
       </div>
     </div>
 
   </div>
+</div>
+
+<!-- ======== STANDINGS ======== -->
+<div id="section-standings" class="section">
+  <div class="section-title">📊 小组积分榜 <span>（小组赛进行中实时更新）</span></div>
+  <div id="standings-container"></div>
 </div>
 
 <!-- ======== SCHEDULE BY GROUP ======== -->
@@ -574,20 +705,41 @@
     <div class="ko-stage" style="border-color:#fdbb2d55;background:rgba(253,187,45,0.07)"><div class="stage-name" style="color:#fdbb2d">🏆 决赛</div><div class="stage-date" style="font-size:0.95rem">7月19日</div><div class="stage-count">纽约大都会</div></div>
   </div>
 
-  <!-- 对阵图说明 -->
-  <div style="margin-bottom:16px;font-size:0.85rem;color:#8a9bb5;line-height:1.7;">
-    📋 <strong style="color:#dde">晋级规则</strong>：12组各前2名（24队）+ 8支最佳第3名 = <strong style="color:#fdbb2d">32队</strong> 晋级淘汰赛。
-    以下为淘汰赛对阵结构，小组赛结束后填入实际球队。
+  <!-- API Config -->
+  <div class="api-config-bar" id="apiConfigBar">
+    🌐 <strong>实时比分 API</strong>：填写 API Key 后自动获取 live 数据
+    &nbsp;<input type="password" class="api-input" id="apiKeyInput" placeholder="填入 wc2026api.com Key">
+    <button class="api-apply-btn" onclick="applyApiKey()">应用</button>
+    &nbsp;|&nbsp;<a href="https://wc2026api.com" target="_blank">申请 API Key →</a>
   </div>
 
-  <!-- 可视化淘汰赛对阵图 -->
-  <div class="bracket-wrap">
-    <div id="bracket-container"></div>
+  <div class="bracket-zoom-controls">
+    <button class="zoom-btn" onclick="zoomBracket(-0.1)" title="缩小">−</button>
+    <span class="zoom-level" id="zoomLevel">100%</span>
+    <button class="zoom-btn" onclick="zoomBracket(0.1)" title="放大">+</button>
+    <button class="zoom-btn" onclick="zoomBracket(0)" title="重置" style="font-size:0.75rem">⟳</button>
+  </div>
+
+  <div class="bracket-section" id="bracketSection">
+    <!-- Upper Half -->
+    <div class="bracket-half" id="bracket-upper">
+      <div class="bracket-half-label">🌐 上半区 <span style="font-size:0.7rem;color:#556;font-weight:400">(A/B/C/D/E/F/G/H 组晋级)</span></div>
+      <div class="bracket-half-inner">
+        <div id="bracket-upper-container"></div>
+      </div>
+    </div>
+    <!-- Lower Half -->
+    <div class="bracket-half" id="bracket-lower">
+      <div class="bracket-half-label">🌑 下半区 <span style="font-size:0.7rem;color:#556;font-weight:400">(I/J/K/L 组晋级)</span></div>
+      <div class="bracket-half-inner">
+        <div id="bracket-lower-container"></div>
+      </div>
+    </div>
   </div>
 
   <div class="bracket-note">
     ⚠️ <strong>说明</strong>：淘汰赛对阵将在小组赛（6月28日）结束后根据各组排名正式确定。页面将自动更新实际对阵球队。<br>
-    季军赛：7月18日 · 迈阿密 &nbsp;|&nbsp; 决赛：7月19日 · 纽约大都会球场
+    季军赛：7月18日（周六）· 迈阿密 &nbsp;|&nbsp; 决赛：7月19日（周日）· 纽约大都会球场
   </div>
 </div>
 
@@ -607,143 +759,242 @@ const CONFIG = {
   USE_DEMO: true
 };
 
+// ===== COUNTRY FLAGS =====
+const FLAGS = {
+  '墨西哥': '🇲🇽', '南非': '🇿🇦', '韩国': '🇰🇷', '捷克': '🇳🇱',
+  '加拿大': '🇨🇦', '卡塔尔': '🇶🇦', '瑞士': '🇨🇭', '波黑': '🇧🇦',
+  '巴西': '🇧🇷', '摩洛哥': '🇲🇦', '苏格兰': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '海地': '🇭🇹',
+  '美国': '🇺🇸', '巴拉圭': '🇵🇾', '澳大利亚': '🇦🇺', '土耳其': '🇹🇷',
+  '德国': '🇩🇪', '科特迪瓦': '🇨🇮', '厄瓜多尔': '🇪🇨', '库拉索': '🇨🇼',
+  '荷兰': '🇳🇱', '日本': '🇯🇵', '突尼斯': '🇹🇳', '瑞典': '🇸🇪',
+  '比利时': '🇧🇪', '伊朗': '🇮🇷', '新西兰': '🇳🇿', '埃及': '🇪🇬',
+  '西班牙': '🇪🇸', '沙特': '🇸🇦', '乌拉圭': '🇺🇾', '佛得角': '🇨🇻',
+  '法国': '🇫🇷', '塞内加尔': '🇸🇳', '挪威': '🇳🇴', '伊拉克': '🇮🇶',
+  '阿根廷': '🇦🇷', '阿尔及利亚': '🇩🇿', '奥地利': '🇦🇹', '约旦': '🇯🇴',
+  '葡萄牙': '🇵🇹', '哥伦比亚': '🇨🇴', '乌兹别克': '🇺🇿', '民主刚果': '🇨🇩',
+  '英格兰': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', '克罗地亚': '🇭🇷', '加纳': '🇬🇭', '巴拿马': '🇵🇦'
+};
+
+function flag(name) { return FLAGS[name] || '🏳️'; }
+
+// ===== WEEKDAYS =====
+const WEEKDAYS = ['周日','周一','周二','周三','周四','周五','周六'];
+// 2026年6月12日 = 周五
+function getWeekday(dateStr) {
+  // dateStr format: "6月XX日"
+  const month = 6;
+  const day = parseInt(dateStr.replace(/[^0-9]/g,''));
+  if (!day) return '';
+  const d = new Date(2026, month - 1, day);
+  return ' ' + WEEKDAYS[d.getDay()];
+}
+
 // ===== MATCH DATA (72场小组赛) =====
 const MATCHES = [
   // A组
-  {id:'A1',sortKey:20260612_0300,date:'6月12日',dateNum:20260612,time:'03:00',group:'A',home:'墨西哥',away:'南非',venue:'墨西哥城'},
-  {id:'A2',sortKey:20260612_1000,date:'6月12日',dateNum:20260612,time:'10:00',group:'A',home:'韩国',away:'捷克',venue:'瓜达拉哈拉'},
-  {id:'B1',sortKey:20260613_0300,date:'6月13日',dateNum:20260613,time:'03:00',group:'B',home:'加拿大',away:'波黑',venue:'多伦多'},
-  {id:'D1',sortKey:20260613_0900,date:'6月13日',dateNum:20260613,time:'09:00',group:'D',home:'美国',away:'巴拉圭',venue:'洛杉矶'},
-  {id:'B2',sortKey:20260614_0300,date:'6月14日',dateNum:20260614,time:'03:00',group:'B',home:'卡塔尔',away:'瑞士',venue:'旧金山'},
-  {id:'C1',sortKey:20260614_0600,date:'6月14日',dateNum:20260614,time:'06:00',group:'C',home:'巴西',away:'摩洛哥',venue:'纽约'},
-  {id:'C2',sortKey:20260614_0900,date:'6月14日',dateNum:20260614,time:'09:00',group:'C',home:'海地',away:'苏格兰',venue:'波士顿'},
-  {id:'D2',sortKey:20260614_1200,date:'6月14日',dateNum:20260614,time:'12:00',group:'D',home:'澳大利亚',away:'土耳其',venue:'纽约'},
-  {id:'E1',sortKey:20260615_0100,date:'6月15日',dateNum:20260615,time:'01:00',group:'E',home:'德国',away:'库拉索',venue:'休斯顿'},
-  {id:'F1',sortKey:20260615_0400,date:'6月15日',dateNum:20260615,time:'04:00',group:'F',home:'荷兰',away:'日本',venue:'达拉斯'},
-  {id:'E2',sortKey:20260615_0700,date:'6月15日',dateNum:20260615,time:'07:00',group:'E',home:'科特迪瓦',away:'厄瓜多尔',venue:'费城'},
-  {id:'F2',sortKey:20260615_1000,date:'6月15日',dateNum:20260615,time:'10:00',group:'F',home:'瑞典',away:'突尼斯',venue:'蒙特雷'},
-  {id:'H1',sortKey:20260616_0000,date:'6月16日',dateNum:20260616,time:'00:00',group:'H',home:'西班牙',away:'佛得角',venue:'亚特兰大'},
-  {id:'G1',sortKey:20260616_0300,date:'6月16日',dateNum:20260616,time:'03:00',group:'G',home:'比利时',away:'埃及',venue:'西雅图'},
-  {id:'H2',sortKey:20260616_0600,date:'6月16日',dateNum:20260616,time:'06:00',group:'H',home:'沙特阿拉伯',away:'乌拉圭',venue:'迈阿密'},
-  {id:'G2',sortKey:20260616_0900,date:'6月16日',dateNum:20260616,time:'09:00',group:'G',home:'伊朗',away:'新西兰',venue:'洛杉矶'},
-  {id:'I1',sortKey:20260617_0300,date:'6月17日',dateNum:20260617,time:'03:00',group:'I',home:'法国',away:'塞内加尔',venue:'纽约'},
-  {id:'I2',sortKey:20260617_0600,date:'6月17日',dateNum:20260617,time:'06:00',group:'I',home:'伊拉克',away:'挪威',venue:'波士顿'},
-  {id:'J1',sortKey:20260617_0900,date:'6月17日',dateNum:20260617,time:'09:00',group:'J',home:'阿根廷',away:'阿尔及利亚',venue:'堪萨斯城'},
-  {id:'J2',sortKey:20260617_1200,date:'6月17日',dateNum:20260617,time:'12:00',group:'J',home:'奥地利',away:'约旦',venue:'旧金山'},
-  {id:'K1',sortKey:20260618_0100,date:'6月18日',dateNum:20260618,time:'01:00',group:'K',home:'葡萄牙',away:'民主刚果',venue:'休斯顿'},
-  {id:'L1',sortKey:20260618_0400,date:'6月18日',dateNum:20260618,time:'04:00',group:'L',home:'英格兰',away:'克罗地亚',venue:'达拉斯'},
-  {id:'L2',sortKey:20260618_0700,date:'6月18日',dateNum:20260618,time:'07:00',group:'L',home:'加纳',away:'巴拿马',venue:'多伦多'},
-  {id:'K2',sortKey:20260618_1000,date:'6月18日',dateNum:20260618,time:'10:00',group:'K',home:'乌兹别克斯坦',away:'哥伦比亚',venue:'墨西哥城'},
-  {id:'A3',sortKey:20260619_0000,date:'6月19日',dateNum:20260619,time:'00:00',group:'A',home:'捷克',away:'南非',venue:'亚特兰大'},
-  {id:'B3',sortKey:20260619_0300,date:'6月19日',dateNum:20260619,time:'03:00',group:'B',home:'瑞士',away:'波黑',venue:'洛杉矶'},
-  {id:'B4',sortKey:20260619_0600,date:'6月19日',dateNum:20260619,time:'06:00',group:'B',home:'加拿大',away:'卡塔尔',venue:'温哥华'},
-  {id:'A4',sortKey:20260619_0900,date:'6月19日',dateNum:20260619,time:'09:00',group:'A',home:'墨西哥',away:'韩国',venue:'瓜达拉哈拉'},
-  {id:'C3',sortKey:20260620_0600,date:'6月20日',dateNum:20260620,time:'06:00',group:'C',home:'苏格兰',away:'摩洛哥',venue:'波士顿'},
-  {id:'C4',sortKey:20260620_0900,date:'6月20日',dateNum:20260620,time:'09:00',group:'C',home:'巴西',away:'海地',venue:'费城'},
-  {id:'D3',sortKey:20260620_0300,date:'6月20日',dateNum:20260620,time:'03:00',group:'D',home:'美国',away:'澳大利亚',venue:'西雅图'},
-  {id:'D4',sortKey:20260620_1200,date:'6月20日',dateNum:20260620,time:'12:00',group:'D',home:'土耳其',away:'巴拉圭',venue:'旧金山'},
-  {id:'F3',sortKey:20260621_0100,date:'6月21日',dateNum:20260621,time:'01:00',group:'F',home:'荷兰',away:'瑞典',venue:'休斯顿'},
-  {id:'E3',sortKey:20260621_0400,date:'6月21日',dateNum:20260621,time:'04:00',group:'E',home:'德国',away:'科特迪瓦',venue:'多伦多'},
-  {id:'E4',sortKey:20260621_0700,date:'6月21日',dateNum:20260621,time:'07:00',group:'E',home:'厄瓜多尔',away:'库拉索',venue:'堪萨斯城'},
-  {id:'F4',sortKey:20260621_1100,date:'6月21日',dateNum:20260621,time:'11:00',group:'F',home:'突尼斯',away:'日本',venue:'蒙特雷'},
-  {id:'H3',sortKey:20260622_0000,date:'6月22日',dateNum:20260622,time:'00:00',group:'H',home:'西班牙',away:'沙特阿拉伯',venue:'亚特兰大'},
-  {id:'G3',sortKey:20260622_0300,date:'6月22日',dateNum:20260622,time:'03:00',group:'G',home:'比利时',away:'伊朗',venue:'洛杉矶'},
-  {id:'H4',sortKey:20260622_0600,date:'6月22日',dateNum:20260622,time:'06:00',group:'H',home:'乌拉圭',away:'佛得角',venue:'迈阿密'},
-  {id:'G4',sortKey:20260622_0900,date:'6月22日',dateNum:20260622,time:'09:00',group:'G',home:'新西兰',away:'埃及',venue:'温哥华'},
-  {id:'J3',sortKey:20260623_0100,date:'6月23日',dateNum:20260623,time:'01:00',group:'J',home:'阿根廷',away:'奥地利',venue:'达拉斯'},
-  {id:'I3',sortKey:20260623_0500,date:'6月23日',dateNum:20260623,time:'05:00',group:'I',home:'法国',away:'伊拉克',venue:'费城'},
-  {id:'I4',sortKey:20260623_0800,date:'6月23日',dateNum:20260623,time:'08:00',group:'I',home:'挪威',away:'塞内加尔',venue:'纽约'},
-  {id:'J4',sortKey:20260623_1100,date:'6月23日',dateNum:20260623,time:'11:00',group:'J',home:'约旦',away:'阿尔及利亚',venue:'旧金山'},
-  {id:'K3',sortKey:20260624_0100,date:'6月24日',dateNum:20260624,time:'01:00',group:'K',home:'葡萄牙',away:'乌兹别克斯坦',venue:'休斯顿'},
-  {id:'L3',sortKey:20260624_0400,date:'6月24日',dateNum:20260624,time:'04:00',group:'L',home:'英格兰',away:'加纳',venue:'波士顿'},
-  {id:'L4',sortKey:20260624_0700,date:'6月24日',dateNum:20260624,time:'07:00',group:'L',home:'巴拿马',away:'克罗地亚',venue:'多伦多'},
-  {id:'K4',sortKey:20260624_1000,date:'6月24日',dateNum:20260624,time:'10:00',group:'K',home:'哥伦比亚',away:'民主刚果',venue:'瓜达拉哈拉'},
-  {id:'A5',sortKey:20260625_0900,date:'6月25日',dateNum:20260625,time:'09:00',group:'A',home:'墨西哥',away:'捷克',venue:'墨西哥城'},
-  {id:'A6',sortKey:20260625_0900,date:'6月25日',dateNum:20260625,time:'09:00',group:'A',home:'韩国',away:'南非',venue:'蒙特雷'},
-  {id:'B5',sortKey:20260625_0300,date:'6月25日',dateNum:20260625,time:'03:00',group:'B',home:'瑞士',away:'加拿大',venue:'温哥华'},
-  {id:'B6',sortKey:20260625_0300,date:'6月25日',dateNum:20260625,time:'03:00',group:'B',home:'波黑',away:'卡塔尔',venue:'西雅图'},
-  {id:'C5',sortKey:20260625_0600,date:'6月25日',dateNum:20260625,time:'06:00',group:'C',home:'摩洛哥',away:'海地',venue:'亚特兰大'},
-  {id:'C6',sortKey:20260625_0600,date:'6月25日',dateNum:20260625,time:'06:00',group:'C',home:'苏格兰',away:'巴西',venue:'迈阿密'},
-  {id:'D5',sortKey:20260626_1000,date:'6月26日',dateNum:20260626,time:'10:00',group:'D',home:'美国',away:'土耳其',venue:'洛杉矶'},
-  {id:'D6',sortKey:20260626_1000,date:'6月26日',dateNum:20260626,time:'10:00',group:'D',home:'巴拉圭',away:'澳大利亚',venue:'旧金山'},
-  {id:'E5',sortKey:20260626_0600,date:'6月26日',dateNum:20260626,time:'06:00',group:'E',home:'厄瓜多尔',away:'德国',venue:'纽约'},
-  {id:'E6',sortKey:20260626_0600,date:'6月26日',dateNum:20260626,time:'06:00',group:'E',home:'库拉索',away:'科特迪瓦',venue:'费城'},
-  {id:'F5',sortKey:20260626_0700,date:'6月26日',dateNum:20260626,time:'07:00',group:'F',home:'日本',away:'瑞典',venue:'达拉斯'},
-  {id:'F6',sortKey:20260626_0700,date:'6月26日',dateNum:20260626,time:'07:00',group:'F',home:'突尼斯',away:'荷兰',venue:'堪萨斯城'},
-  {id:'G5',sortKey:20260627_1100,date:'6月27日',dateNum:20260627,time:'11:00',group:'G',home:'新西兰',away:'比利时',venue:'瓜达拉哈拉'},
-  {id:'G6',sortKey:20260627_1100,date:'6月27日',dateNum:20260627,time:'11:00',group:'G',home:'埃及',away:'伊朗',venue:'休斯顿'},
-  {id:'H5',sortKey:20260627_0800,date:'6月27日',dateNum:20260627,time:'08:00',group:'H',home:'乌拉圭',away:'西班牙',venue:'温哥华'},
-  {id:'H6',sortKey:20260627_0800,date:'6月27日',dateNum:20260627,time:'08:00',group:'H',home:'佛得角',away:'沙特阿拉伯',venue:'西雅图'},
-  {id:'I5',sortKey:20260627_0300,date:'6月27日',dateNum:20260627,time:'03:00',group:'I',home:'挪威',away:'法国',venue:'波士顿'},
-  {id:'I6',sortKey:20260627_0300,date:'6月27日',dateNum:20260627,time:'03:00',group:'I',home:'塞内加尔',away:'伊拉克',venue:'多伦多'},
-  {id:'J5',sortKey:20260628_1000,date:'6月28日',dateNum:20260628,time:'10:00',group:'J',home:'约旦',away:'阿根廷',venue:'堪萨斯城'},
-  {id:'J6',sortKey:20260628_1000,date:'6月28日',dateNum:20260628,time:'10:00',group:'J',home:'阿尔及利亚',away:'奥地利',venue:'达拉斯'},
-  {id:'K5',sortKey:20260628_0730,date:'6月28日',dateNum:20260628,time:'07:30',group:'K',home:'哥伦比亚',away:'葡萄牙',venue:'迈阿密'},
-  {id:'K6',sortKey:20260628_0730,date:'6月28日',dateNum:20260628,time:'07:30',group:'K',home:'乌兹别克斯坦',away:'民主刚果',venue:'亚特兰大'},
-  {id:'L5',sortKey:20260628_0500,date:'6月28日',dateNum:20260628,time:'05:00',group:'L',home:'巴拿马',away:'英格兰',venue:'纽约'},
-  {id:'L6',sortKey:20260628_0500,date:'6月28日',dateNum:20260628,time:'05:00',group:'L',home:'克罗地亚',away:'加纳',venue:'费城'},
+  {id:'A1',sortKey:202606120300,date:'6月12日',weekday:'周五',dateNum:20260612,time:'03:00',group:'A',home:'墨西哥',away:'南非',venue:'墨西哥城'},
+  {id:'A2',sortKey:202606121000,date:'6月12日',weekday:'周五',dateNum:20260612,time:'10:00',group:'A',home:'韩国',away:'捷克',venue:'瓜达拉哈拉'},
+  {id:'B1',sortKey:202606130300,date:'6月13日',weekday:'周六',dateNum:20260613,time:'03:00',group:'B',home:'加拿大',away:'波黑',venue:'多伦多'},
+  {id:'D1',sortKey:202606130900,date:'6月13日',weekday:'周六',dateNum:20260613,time:'09:00',group:'D',home:'美国',away:'巴拉圭',venue:'洛杉矶'},
+  {id:'B2',sortKey:202606140300,date:'6月14日',weekday:'周日',dateNum:20260614,time:'03:00',group:'B',home:'卡塔尔',away:'瑞士',venue:'旧金山'},
+  {id:'C1',sortKey:202606140600,date:'6月14日',weekday:'周日',dateNum:20260614,time:'06:00',group:'C',home:'巴西',away:'摩洛哥',venue:'纽约'},
+  {id:'C2',sortKey:202606140900,date:'6月14日',weekday:'周日',dateNum:20260614,time:'09:00',group:'C',home:'海地',away:'苏格兰',venue:'波士顿'},
+  {id:'D2',sortKey:202606141200,date:'6月14日',weekday:'周日',dateNum:20260614,time:'12:00',group:'D',home:'澳大利亚',away:'土耳其',venue:'纽约'},
+  {id:'E1',sortKey:202606150100,date:'6月15日',weekday:'周一',dateNum:20260615,time:'01:00',group:'E',home:'德国',away:'库拉索',venue:'休斯顿'},
+  {id:'F1',sortKey:202606150400,date:'6月15日',weekday:'周一',dateNum:20260615,time:'04:00',group:'F',home:'荷兰',away:'日本',venue:'达拉斯'},
+  {id:'E2',sortKey:202606150700,date:'6月15日',weekday:'周一',dateNum:20260615,time:'07:00',group:'E',home:'科特迪瓦',away:'厄瓜多尔',venue:'费城'},
+  {id:'F2',sortKey:202606151000,date:'6月15日',weekday:'周一',dateNum:20260615,time:'10:00',group:'F',home:'瑞典',away:'突尼斯',venue:'蒙特雷'},
+  {id:'H1',sortKey:202606160000,date:'6月16日',weekday:'周二',dateNum:20260616,time:'00:00',group:'H',home:'西班牙',away:'佛得角',venue:'亚特兰大'},
+  {id:'G1',sortKey:202606160300,date:'6月16日',weekday:'周二',dateNum:20260616,time:'03:00',group:'G',home:'比利时',away:'埃及',venue:'西雅图'},
+  {id:'H2',sortKey:202606160600,date:'6月16日',weekday:'周二',dateNum:20260616,time:'06:00',group:'H',home:'沙特',away:'乌拉圭',venue:'迈阿密'},
+  {id:'G2',sortKey:202606160900,date:'6月16日',weekday:'周二',dateNum:20260616,time:'09:00',group:'G',home:'伊朗',away:'新西兰',venue:'洛杉矶'},
+  {id:'I1',sortKey:202606170300,date:'6月17日',weekday:'周三',dateNum:20260617,time:'03:00',group:'I',home:'法国',away:'塞内加尔',venue:'纽约'},
+  {id:'I2',sortKey:202606170600,date:'6月17日',weekday:'周三',dateNum:20260617,time:'06:00',group:'I',home:'伊拉克',away:'挪威',venue:'波士顿'},
+  {id:'J1',sortKey:202606170900,date:'6月17日',weekday:'周三',dateNum:20260617,time:'09:00',group:'J',home:'阿根廷',away:'阿尔及利亚',venue:'堪萨斯城'},
+  {id:'J2',sortKey:202606171200,date:'6月17日',weekday:'周三',dateNum:20260617,time:'12:00',group:'J',home:'奥地利',away:'约旦',venue:'旧金山'},
+  {id:'K1',sortKey:202606180100,date:'6月18日',weekday:'周四',dateNum:20260618,time:'01:00',group:'K',home:'葡萄牙',away:'民主刚果',venue:'休斯顿'},
+  {id:'L1',sortKey:202606180400,date:'6月18日',weekday:'周四',dateNum:20260618,time:'04:00',group:'L',home:'英格兰',away:'克罗地亚',venue:'达拉斯'},
+  {id:'L2',sortKey:202606180700,date:'6月18日',weekday:'周四',dateNum:20260618,time:'07:00',group:'L',home:'加纳',away:'巴拿马',venue:'多伦多'},
+  {id:'K2',sortKey:202606181000,date:'6月18日',weekday:'周四',dateNum:20260618,time:'10:00',group:'K',home:'乌兹别克',away:'哥伦比亚',venue:'墨西哥城'},
+  {id:'A3',sortKey:202606190000,date:'6月19日',weekday:'周五',dateNum:20260619,time:'00:00',group:'A',home:'捷克',away:'南非',venue:'亚特兰大'},
+  {id:'B3',sortKey:202606190300,date:'6月19日',weekday:'周五',dateNum:20260619,time:'03:00',group:'B',home:'瑞士',away:'波黑',venue:'洛杉矶'},
+  {id:'B4',sortKey:202606190600,date:'6月19日',weekday:'周五',dateNum:20260619,time:'06:00',group:'B',home:'加拿大',away:'卡塔尔',venue:'温哥华'},
+  {id:'A4',sortKey:202606190900,date:'6月19日',weekday:'周五',dateNum:20260619,time:'09:00',group:'A',home:'墨西哥',away:'韩国',venue:'瓜达拉哈拉'},
+  {id:'D3',sortKey:202606200300,date:'6月20日',weekday:'周六',dateNum:20260620,time:'03:00',group:'D',home:'美国',away:'澳大利亚',venue:'西雅图'},
+  {id:'C3',sortKey:202606200600,date:'6月20日',weekday:'周六',dateNum:20260620,time:'06:00',group:'C',home:'苏格兰',away:'摩洛哥',venue:'波士顿'},
+  {id:'C4',sortKey:202606200900,date:'6月20日',weekday:'周六',dateNum:20260620,time:'09:00',group:'C',home:'巴西',away:'海地',venue:'费城'},
+  {id:'D4',sortKey:202606201200,date:'6月20日',weekday:'周六',dateNum:20260620,time:'12:00',group:'D',home:'土耳其',away:'巴拉圭',venue:'旧金山'},
+  {id:'F3',sortKey:202606210100,date:'6月21日',weekday:'周日',dateNum:20260621,time:'01:00',group:'F',home:'荷兰',away:'瑞典',venue:'休斯顿'},
+  {id:'E3',sortKey:202606210400,date:'6月21日',weekday:'周日',dateNum:20260621,time:'04:00',group:'E',home:'德国',away:'科特迪瓦',venue:'多伦多'},
+  {id:'E4',sortKey:202606210700,date:'6月21日',weekday:'周日',dateNum:20260621,time:'07:00',group:'E',home:'厄瓜多尔',away:'库拉索',venue:'堪萨斯城'},
+  {id:'F4',sortKey:202606211100,date:'6月21日',weekday:'周日',dateNum:20260621,time:'11:00',group:'F',home:'突尼斯',away:'日本',venue:'蒙特雷'},
+  {id:'H3',sortKey:202606220000,date:'6月22日',weekday:'周一',dateNum:20260622,time:'00:00',group:'H',home:'西班牙',away:'沙特',venue:'亚特兰大'},
+  {id:'G3',sortKey:202606220300,date:'6月22日',weekday:'周一',dateNum:20260622,time:'03:00',group:'G',home:'比利时',away:'伊朗',venue:'洛杉矶'},
+  {id:'H4',sortKey:202606220600,date:'6月22日',weekday:'周一',dateNum:20260622,time:'06:00',group:'H',home:'乌拉圭',away:'佛得角',venue:'迈阿密'},
+  {id:'G4',sortKey:202606220900,date:'6月22日',weekday:'周一',dateNum:20260622,time:'09:00',group:'G',home:'新西兰',away:'埃及',venue:'温哥华'},
+  {id:'J3',sortKey:202606230100,date:'6月23日',weekday:'周二',dateNum:20260623,time:'01:00',group:'J',home:'阿根廷',away:'奥地利',venue:'达拉斯'},
+  {id:'I3',sortKey:202606230500,date:'6月23日',weekday:'周二',dateNum:20260623,time:'05:00',group:'I',home:'法国',away:'伊拉克',venue:'费城'},
+  {id:'I4',sortKey:202606230800,date:'6月23日',weekday:'周二',dateNum:20260623,time:'08:00',group:'I',home:'挪威',away:'塞内加尔',venue:'纽约'},
+  {id:'J4',sortKey:202606231100,date:'6月23日',weekday:'周二',dateNum:20260623,time:'11:00',group:'J',home:'约旦',away:'阿尔及利亚',venue:'旧金山'},
+  {id:'K3',sortKey:202606240100,date:'6月24日',weekday:'周三',dateNum:20260624,time:'01:00',group:'K',home:'葡萄牙',away:'乌兹别克',venue:'休斯顿'},
+  {id:'L3',sortKey:202606240400,date:'6月24日',weekday:'周三',dateNum:20260624,time:'04:00',group:'L',home:'英格兰',away:'加纳',venue:'波士顿'},
+  {id:'L4',sortKey:202606240700,date:'6月24日',weekday:'周三',dateNum:20260624,time:'07:00',group:'L',home:'巴拿马',away:'克罗地亚',venue:'多伦多'},
+  {id:'K4',sortKey:202606241000,date:'6月24日',weekday:'周三',dateNum:20260624,time:'10:00',group:'K',home:'哥伦比亚',away:'民主刚果',venue:'瓜达拉哈拉'},
+  {id:'A5',sortKey:202606250900,date:'6月25日',weekday:'周四',dateNum:20260625,time:'09:00',group:'A',home:'墨西哥',away:'捷克',venue:'墨西哥城'},
+  {id:'A6',sortKey:202606250900,date:'6月25日',weekday:'周四',dateNum:20260625,time:'09:00',group:'A',home:'韩国',away:'南非',venue:'蒙特雷'},
+  {id:'B5',sortKey:202606250300,date:'6月25日',weekday:'周四',dateNum:20260625,time:'03:00',group:'B',home:'瑞士',away:'加拿大',venue:'温哥华'},
+  {id:'B6',sortKey:202606250300,date:'6月25日',weekday:'周四',dateNum:20260625,time:'03:00',group:'B',home:'波黑',away:'卡塔尔',venue:'西雅图'},
+  {id:'C5',sortKey:202606250600,date:'6月25日',weekday:'周四',dateNum:20260625,time:'06:00',group:'C',home:'摩洛哥',away:'海地',venue:'亚特兰大'},
+  {id:'C6',sortKey:202606250600,date:'6月25日',weekday:'周四',dateNum:20260625,time:'06:00',group:'C',home:'苏格兰',away:'巴西',venue:'迈阿密'},
+  {id:'D5',sortKey:202606261000,date:'6月26日',weekday:'周五',dateNum:20260626,time:'10:00',group:'D',home:'美国',away:'土耳其',venue:'洛杉矶'},
+  {id:'D6',sortKey:202606261000,date:'6月26日',weekday:'周五',dateNum:20260626,time:'10:00',group:'D',home:'巴拉圭',away:'澳大利亚',venue:'旧金山'},
+  {id:'E5',sortKey:202606260600,date:'6月26日',weekday:'周五',dateNum:20260626,time:'06:00',group:'E',home:'厄瓜多尔',away:'德国',venue:'纽约'},
+  {id:'E6',sortKey:202606260600,date:'6月26日',weekday:'周五',dateNum:20260626,time:'06:00',group:'E',home:'库拉索',away:'科特迪瓦',venue:'费城'},
+  {id:'F5',sortKey:202606260700,date:'6月26日',weekday:'周五',dateNum:20260626,time:'07:00',group:'F',home:'日本',away:'瑞典',venue:'达拉斯'},
+  {id:'F6',sortKey:202606260700,date:'6月26日',weekday:'周五',dateNum:20260626,time:'07:00',group:'F',home:'突尼斯',away:'荷兰',venue:'堪萨斯城'},
+  {id:'G5',sortKey:202606271100,date:'6月27日',weekday:'周六',dateNum:20260627,time:'11:00',group:'G',home:'新西兰',away:'比利时',venue:'瓜达拉哈拉'},
+  {id:'G6',sortKey:202606271100,date:'6月27日',weekday:'周六',dateNum:20260627,time:'11:00',group:'G',home:'埃及',away:'伊朗',venue:'休斯顿'},
+  {id:'H5',sortKey:202606270800,date:'6月27日',weekday:'周六',dateNum:20260627,time:'08:00',group:'H',home:'乌拉圭',away:'西班牙',venue:'温哥华'},
+  {id:'H6',sortKey:202606270800,date:'6月27日',weekday:'周六',dateNum:20260627,time:'08:00',group:'H',home:'佛得角',away:'沙特',venue:'西雅图'},
+  {id:'I5',sortKey:202606270300,date:'6月27日',weekday:'周六',dateNum:20260627,time:'03:00',group:'I',home:'挪威',away:'法国',venue:'波士顿'},
+  {id:'I6',sortKey:202606270300,date:'6月27日',weekday:'周六',dateNum:20260627,time:'03:00',group:'I',home:'塞内加尔',away:'伊拉克',venue:'多伦多'},
+  {id:'J5',sortKey:202606281000,date:'6月28日',weekday:'周日',dateNum:20260628,time:'10:00',group:'J',home:'约旦',away:'阿根廷',venue:'堪萨斯城'},
+  {id:'J6',sortKey:202606281000,date:'6月28日',weekday:'周日',dateNum:20260628,time:'10:00',group:'J',home:'阿尔及利亚',away:'奥地利',venue:'达拉斯'},
+  {id:'K5',sortKey:202606280730,date:'6月28日',weekday:'周日',dateNum:20260628,time:'07:30',group:'K',home:'哥伦比亚',away:'葡萄牙',venue:'迈阿密'},
+  {id:'K6',sortKey:202606280730,date:'6月28日',weekday:'周日',dateNum:20260628,time:'07:30',group:'K',home:'乌兹别克',away:'民主刚果',venue:'亚特兰大'},
+  {id:'L5',sortKey:202606280500,date:'6月28日',weekday:'周日',dateNum:20260628,time:'05:00',group:'L',home:'巴拿马',away:'英格兰',venue:'纽约'},
+  {id:'L6',sortKey:202606280500,date:'6月28日',weekday:'周日',dateNum:20260628,time:'05:00',group:'L',home:'克罗地亚',away:'加纳',venue:'费城'},
 ];
 
 // ===== KNOCKOUT DATA =====
-const KO_ROUNDS = [
-  {
-    name: '32强赛', date: '6/29–7/4', matches: [
-      {id:'R32_1', date:'6/29', home:'A1', away:'B3', venue:'洛杉矶'},
-      {id:'R32_2', date:'6/29', home:'C1', away:'D3', venue:'纽约'},
-      {id:'R32_3', date:'6/30', home:'E1', away:'F3', venue:'休斯顿'},
-      {id:'R32_4', date:'6/30', home:'G1', away:'H3', venue:'亚特兰大'},
-      {id:'R32_5', date:'7/1', home:'I1', away:'J3', venue:'达拉斯'},
-      {id:'R32_6', date:'7/1', home:'K1', away:'L3', venue:'迈阿密'},
-      {id:'R32_7', date:'7/2', home:'A2', away:'B3x', venue:'波士顿'},
-      {id:'R32_8', date:'7/2', home:'C2', away:'D3x', venue:'费城'},
-      {id:'R32_9', date:'7/3', home:'E2', away:'F3x', venue:'西雅图'},
-      {id:'R32_10', date:'7/3', home:'G2', away:'H3x', venue:'温哥华'},
-      {id:'R32_11', date:'7/4', home:'I2', away:'J3x', venue:'堪萨斯城'},
-      {id:'R32_12', date:'7/4', home:'K2', away:'L3x', venue:'多伦多'},
-      {id:'R32_13', date:'7/4', home:'最佳第3名1', away:'最佳第3名2', venue:'芝加哥'},
-      {id:'R32_14', date:'7/4', home:'最佳第3名3', away:'最佳第3名4', venue:'旧金山'},
-      {id:'R32_15', date:'7/4', home:'最佳第3名5', away:'最佳第3名6', venue:'蒙特雷'},
-      {id:'R32_16', date:'7/4', home:'最佳第3名7', away:'最佳第3名8', venue:'瓜达拉哈拉'},
-    ]
-  },
-  {
-    name: '16强', date: '7/4–7/8', matches: [
-      {id:'R16_1', home:'32强胜者1', away:'32强胜者2', venue:'洛杉矶'},
-      {id:'R16_2', home:'32强胜者3', away:'32强胜者4', venue:'纽约'},
-      {id:'R16_3', home:'32强胜者5', away:'32强胜者6', venue:'休斯顿'},
-      {id:'R16_4', home:'32强胜者7', away:'32强胜者8', venue:'亚特兰大'},
-      {id:'R16_5', home:'32强胜者9', away:'32强胜者10', venue:'达拉斯'},
-      {id:'R16_6', home:'32强胜者11', away:'32强胜者12', venue:'迈阿密'},
-      {id:'R16_7', home:'32强胜者13', away:'32强胜者14', venue:'费城'},
-      {id:'R16_8', home:'32强胜者15', away:'32强胜者16', venue:'西雅图'},
-    ]
-  },
-  {
-    name: '1/4决赛', date: '7/9–7/12', matches: [
-      {id:'QF1', home:'16强胜者1', away:'16强胜者2', venue:'洛杉矶'},
-      {id:'QF2', home:'16强胜者3', away:'16强胜者4', venue:'纽约'},
-      {id:'QF3', home:'16强胜者5', away:'16强胜者6', venue:'休斯顿'},
-      {id:'QF4', home:'16强胜者7', away:'16强胜者8', venue:'达拉斯'},
-    ]
-  },
-  {
-    name: '半决赛', date: '7/14–7/15', matches: [
-      {id:'SF1', home:'1/4胜者1', away:'1/4胜者2', venue:'纽约'},
-      {id:'SF2', home:'1/4胜者3', away:'1/4胜者4', venue:'洛杉矶'},
-    ]
-  },
-  {
-    name: '🏆 决赛', date: '7/19', matches: [
-      {id:'FINAL', home:'半决赛胜者1', away:'半决赛胜者2', venue:'纽约大都会球场'},
-    ]
-  }
+const KO_UPPER = [
+  { name: '32强赛', date: '6/29', venue: '洛杉矶', matches: [
+    {id:'RU1', home:'A组第1', away:'B组第3', homeFlag:'🇲🇽', awayFlag:'🇨🇦'},
+    {id:'RU2', home:'C组第1', away:'D组第3', homeFlag:'🇧🇷', awayFlag:'🇺🇸'},
+    {id:'RU3', home:'E组第1', away:'F组第3', homeFlag:'🇩🇪', awayFlag:'🇳🇱'},
+    {id:'RU4', home:'G组第1', away:'H组第3', homeFlag:'🇧🇪', awayFlag:'🇪🇸'},
+  ]},
+  { name: '16强', date: '7/4', venue: '洛杉矶', matches: [
+    {id:'R16U1', home:'32强胜者1', away:'32强胜者2', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R16U2', home:'32强胜者3', away:'32强胜者4', homeFlag:'🏳️', awayFlag:'🏳️'},
+  ]},
+  { name: '1/4决赛', date: '7/9', venue: '纽约', matches: [
+    {id:'QFU1', home:'16强胜者1', away:'16强胜者2', homeFlag:'🏳️', awayFlag:'🏳️'},
+  ]},
+  { name: '半决赛', date: '7/14', venue: '纽约', matches: [
+    {id:'SFU1', home:'1/4胜者1', away:'待定', homeFlag:'🏳️', awayFlag:'🏳️'},
+  ]},
+];
+
+const KO_LOWER = [
+  { name: '32强赛', date: '6/29', venue: '迈阿密', matches: [
+    {id:'RL1', home:'I组第1', away:'J组第3', homeFlag:'🇫🇷', awayFlag:'🇦🇷'},
+    {id:'RL2', home:'K组第1', away:'L组第3', homeFlag:'🇵🇹', awayFlag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+    {id:'RL3', home:'I组第2', away:'J组第2', homeFlag:'🇳🇴', awayFlag:'🇦🇹'},
+    {id:'RL4', home:'K组第2', away:'L组第2', homeFlag:'🇨🇴', awayFlag:'🇭🇷'},
+  ]},
+  { name: '16强', date: '7/4', venue: '迈阿密', matches: [
+    {id:'R16L1', home:'32强胜者5', away:'32强胜者6', homeFlag:'🏳️', awayFlag:'🏳️'},
+    {id:'R16L2', home:'32强胜者7', away:'32强胜者8', homeFlag:'🏳️', awayFlag:'🏳️'},
+  ]},
+  { name: '1/4决赛', date: '7/10', venue: '达拉斯', matches: [
+    {id:'QFL1', home:'16强胜者3', away:'16强胜者4', homeFlag:'🏳️', awayFlag:'🏳️'},
+  ]},
+  { name: '半决赛', date: '7/15', venue: '洛杉矶', matches: [
+    {id:'SFL1', home:'1/4胜者2', away:'待定', homeFlag:'🏳️', awayFlag:'🏳️'},
+  ]},
 ];
 
 // ===== LIVE SCORES =====
 let liveScores = {};
 let lastSource = 'demo';
+let koResults = {}; // knockout results
 
 const groupColors = {A:'group-tag-a',B:'group-tag-b',C:'group-tag-c',D:'group-tag-d',E:'group-tag-e',F:'group-tag-f',G:'group-tag-g',H:'group-tag-h',I:'group-tag-i',J:'group-tag-j',K:'group-tag-k',L:'group-tag-l'};
+const groupTheme = {A:'g-a',B:'g-b',C:'g-c',D:'g-d',E:'g-e',F:'g-f',G:'g-g',H:'g-h',I:'g-i',J:'g-j',K:'g-k',L:'g-l'};
+
+// ===== GROUP STANDINGS =====
+const GROUP_TEAMS = {
+  A:['墨西哥','韩国','南非','捷克'],
+  B:['加拿大','卡塔尔','瑞士','波黑'],
+  C:['巴西','摩洛哥','苏格兰','海地'],
+  D:['美国','巴拉圭','澳大利亚','土耳其'],
+  E:['德国','科特迪瓦','厄瓜多尔','库拉索'],
+  F:['荷兰','日本','突尼斯','瑞典'],
+  G:['比利时','伊朗','新西兰','埃及'],
+  H:['西班牙','沙特','乌拉圭','佛得角'],
+  I:['法国','塞内加尔','挪威','伊拉克'],
+  J:['阿根廷','阿尔及利亚','奥地利','约旦'],
+  K:['葡萄牙','哥伦比亚','乌兹别克','民主刚果'],
+  L:['英格兰','克罗地亚','加纳','巴拿马'],
+};
+
+function computeStandings(group) {
+  const teams = GROUP_TEAMS[group];
+  const rows = teams.map(t => ({ team: t, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 }));
+
+  MATCHES.filter(m => m.group === group).forEach(m => {
+    const s = liveScores[m.id];
+    const homeIdx = rows.findIndex(r => r.team === m.home);
+    const awayIdx = rows.findIndex(r => r.team === m.away);
+    if (homeIdx < 0 || awayIdx < 0) return;
+    rows[homeIdx].played++;
+    rows[awayIdx].played++;
+    if (s && s.home !== undefined) {
+      rows[homeIdx].gf += s.home;
+      rows[homeIdx].ga += s.away;
+      rows[awayIdx].gf += s.away;
+      rows[awayIdx].ga += s.home;
+      if (s.home > s.away) { rows[homeIdx].won++; rows[homeIdx].pts += 3; rows[awayIdx].lost++; }
+      else if (s.home < s.away) { rows[awayIdx].won++; rows[awayIdx].pts += 3; rows[homeIdx].lost++; }
+      else { rows[homeIdx].drawn++; rows[awayIdx].drawn++; rows[homeIdx].pts++; rows[awayIdx].pts++; }
+    }
+  });
+
+  rows.forEach(r => r.gd = r.gf - r.ga);
+  rows.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+  return rows;
+}
+
+function renderStandings() {
+  const container = document.getElementById('standings-container');
+  if (!container) return;
+
+  const groups = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  let html = '<div class="standings-grid">';
+
+  groups.forEach(g => {
+    const rows = computeStandings(g);
+    html += `<div class="standings-card">
+      <div class="standings-header ${groupTheme[g]}">
+        <span class="gh-${g.toLowerCase()}">⚽ ${g} 组积分榜</span>
+      </div>
+      <table class="standings-table">
+        <thead><tr>
+          <th>#</th><th>球队</th><th class="num">赛</th><th class="num">胜</th><th class="num">平</th><th class="num">负</th><th class="num">进</th><th class="num">失</th><th class="num">净</th><th class="num">分</th>
+        </tr></thead>
+        <tbody>`;
+    rows.forEach((r, i) => {
+      const rankClass = i === 0 ? 'q' : i === 1 ? 'oq' : '';
+      html += `<tr>
+        <td class="standings-rank ${rankClass}">${i + 1}</td>
+        <td class="standings-team"><span class="standings-team-flag">${flag(r.team)}</span>${r.team}</td>
+        <td class="num">${r.played}</td>
+        <td class="num">${r.won}</td>
+        <td class="num">${r.drawn}</td>
+        <td class="num">${r.lost}</td>
+        <td class="num">${r.gf}</td>
+        <td class="num">${r.ga}</td>
+        <td class="num">${r.gd > 0 ? '+' : ''}${r.gd}</td>
+        <td class="pts">${r.pts}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
 
 // ===== TAB SWITCHING =====
 function switchTab(tab, btn) {
@@ -751,15 +1002,18 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('section-' + tab).classList.add('active');
   if (btn) btn.classList.add('active');
+  if (tab === 'standings') renderStandings();
 }
 
 // ===== SCORE FETCH =====
 async function fetchScores() {
   if (CONFIG.WC2026_API_KEY) {
     try {
-      const resp = await fetch('https://api.wc2026api.com/matches', { headers: { 'Authorization': CONFIG.WC2026_API_KEY } });
+      const resp = await fetch('https://api.wc2026api.com/v1/matches', {
+        headers: { 'Authorization': `Bearer ${CONFIG.WC2026_API_KEY}` }
+      });
       if (resp.ok) { processApiData(await resp.json()); updateUI(); return; }
-    } catch(e) {}
+    } catch(e) { console.warn('API fetch failed', e); }
   }
   if (CONFIG.GITHUB_RAW_URL) {
     try {
@@ -773,12 +1027,37 @@ async function fetchScores() {
 function processApiData(data) {
   lastSource = Array.isArray(data) ? 'api' : 'github';
   if (Array.isArray(data)) {
-    data.forEach(m => { const match = MATCHES.find(mm => mm.home === m.home && mm.away === m.away); if (match) liveScores[match.id] = { home: m.homeScore, away: m.awayScore, status: m.status || 'pending', minute: m.minute || 0 }; });
-  } else { Object.assign(liveScores, data); }
+    data.forEach(m => {
+      const match = MATCHES.find(mm =>
+        (mm.home === m.home && mm.away === m.away) ||
+        (mm.home.includes(m.home) && mm.away.includes(m.away))
+      );
+      if (match) {
+        liveScores[match.id] = {
+          home: m.homeScore ?? m.home_score ?? m.score?.home,
+          away: m.awayScore ?? m.away_score ?? m.score?.away,
+          status: m.status || 'pending',
+          minute: m.minute || 0
+        };
+      }
+    });
+  } else {
+    Object.assign(liveScores, data.scores || data);
+    Object.assign(koResults, data.knockout || {});
+  }
 }
 
 function useDemoData() {
   lastSource = 'demo';
+}
+
+function applyApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (val) {
+    CONFIG.WC2026_API_KEY = val;
+    CONFIG.USE_DEMO = false;
+    refreshScores();
+  }
 }
 
 // ===== UI UPDATE =====
@@ -799,7 +1078,12 @@ function updateUI() {
       liveIndicator.style.display = 'flex';
       liveContainer.innerHTML = liveMatches.map(m => {
         const s = liveScores[m.id];
-        return `<div class="live-match-card"><span class="lm-team">${m.home}</span><span class="lm-score">${s.home} - ${s.away}</span><span class="lm-team">${m.away}</span><span class="lm-status">${s.minute}' ⏱️</span></div>`;
+        return `<div class="live-match-card">
+          <span class="lm-team">${flag(m.home)} ${m.home}</span>
+          <span class="lm-score">${s.home} - ${s.away}</span>
+          <span class="lm-team">${m.away} ${flag(m.away)}</span>
+          <span class="lm-status">${s.minute}' ⏱️</span>
+        </div>`;
       }).join('');
     } else {
       liveIndicator.style.display = 'none';
@@ -826,13 +1110,14 @@ function updateUI() {
 
   renderScheduleGroup();
   renderScheduleDate();
+  renderBracket();
 }
 
 // ===== RENDER SCHEDULE BY GROUP =====
 function renderScheduleGroup() {
   const tbody = document.getElementById('schedule-group-tbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
-  // Sort by group then by date/time
   const sorted = [...MATCHES].sort((a, b) => {
     if (a.group < b.group) return -1;
     if (a.group > b.group) return 1;
@@ -855,6 +1140,7 @@ function renderScheduleGroup() {
 // ===== RENDER SCHEDULE BY DATE =====
 function renderScheduleDate() {
   const tbody = document.getElementById('schedule-date-tbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
   const sorted = [...MATCHES].sort((a, b) => {
     if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;
@@ -866,7 +1152,7 @@ function renderScheduleDate() {
     if (m.date !== lastDate) {
       const headerRow = document.createElement('tr');
       headerRow.className = 'date-group-header';
-      headerRow.innerHTML = `<td colspan="5">📅 ${m.date}</td>`;
+      headerRow.innerHTML = `<td colspan="5">📅 ${m.date}${m.weekday}</td>`;
       tbody.appendChild(headerRow);
       lastDate = m.date;
     }
@@ -891,19 +1177,21 @@ function buildMatchRow(m, hideDate) {
     }
   }
 
+  const teamsHtml = `${flag(m.home)} ${m.home} <span style="color:#445;margin:0 5px">vs</span> ${flag(m.away)} ${m.away}`;
+
   if (hideDate) {
     tr.innerHTML = `
       <td class="td-time">${m.time}</td>
       <td class="td-group"><span class="${groupColors[m.group]}">${m.group}组</span></td>
-      <td class="td-teams">${m.home} <span style="color:#445;margin:0 5px">vs</span> ${m.away}</td>
+      <td class="td-teams">${teamsHtml}</td>
       <td>${scoreHtml}${statusHtml}</td>
       <td class="td-venue">${m.venue}</td>`;
   } else {
     tr.innerHTML = `
-      <td class="td-date">${m.date}</td>
+      <td class="td-date">${m.date}${m.weekday}</td>
       <td class="td-time">${m.time}</td>
       <td class="td-group"><span class="${groupColors[m.group]}">${m.group}组</span></td>
-      <td class="td-teams">${m.home} <span style="color:#445;margin:0 5px">vs</span> ${m.away}</td>
+      <td class="td-teams">${teamsHtml}</td>
       <td>${scoreHtml}${statusHtml}</td>
       <td class="td-venue">${m.venue}</td>`;
   }
@@ -911,46 +1199,63 @@ function buildMatchRow(m, hideDate) {
 }
 
 // ===== RENDER KNOCKOUT BRACKET =====
-function renderBracket() {
-  const container = document.getElementById('bracket-container');
+function buildBracketRow(round, koSide) {
+  let html = `<div class="bracket-row">`;
+  html += `<div class="bracket-round">`;
+  html += `<div class="round-title">${round.name}<br><span class="round-subtitle">${round.date} · ${round.venue}</span></div>`;
 
-  let html = '<div class="bracket">';
+  const gap = Math.max(4, 10 * Math.pow(2, koSide === 'upper' ? round._ri : round._ri));
+  html += `<div class="round-matches" style="gap:${gap}px">`;
 
-  KO_ROUNDS.forEach((round, ri) => {
-    html += `<div class="bracket-round">`;
-    html += `<div class="round-title">${round.name}<br><span style="color:#6b8cad;font-size:0.7rem">${round.date}</span></div>`;
-    html += `<div class="round-matches" style="gap:${Math.max(4, 8 * Math.pow(2, ri))}px">`;
+  round.matches.forEach(m => {
+    const s = koResults[m.id];
+    const isLive = s && s.status === 'live';
+    const homeDisplay = s && s.home ? s.home : m.home;
+    const awayDisplay = s && s.away ? s.away : m.away;
+    const homeFlag = s && s.homeFlag ? s.homeFlag : (m.homeFlag || '🏳️');
+    const awayFlag = s && s.awayFlag ? s.awayFlag : (m.awayFlag || '🏳️');
+    const homeScore = s && s.homeScore !== undefined ? s.homeScore : '-';
+    const awayScore = s && s.awayScore !== undefined ? s.awayScore : '-';
+    const isTBD = m.home.includes('待定') || m.home.includes('胜者') || m.home.includes('第');
+    const isTBD2 = m.away.includes('待定') || m.away.includes('胜者') || m.away.includes('第');
 
-    round.matches.forEach(m => {
-      const isTBD1 = m.home.includes('胜者') || m.home.includes('第3名') || m.home.match(/^[A-L][123]/) || m.home === '半决赛胜者1' || m.home === '半决赛胜者2';
-      const isTBD2 = m.away.includes('胜者') || m.away.includes('第3名') || m.away.match(/^[A-L][123]/) || m.away === '半决赛胜者1' || m.away === '半决赛胜者2';
-      const dateStr = m.date ? `<span>${m.date}</span>` : '';
+    html += `<div class="bracket-match${isLive ? ' live-match' : ''}">
+      <div class="bracket-match-info"><span>${m.id.replace(/^[A-Z]+/,'')}</span><span>${m.venue || ''}</span></div>
+      <div class="bracket-team${isTBD ? ' tbd' : ''}">
+        <span class="bracket-team-name"><span class="bracket-team-flag">${homeFlag}</span>${homeDisplay}</span>
+        <span class="bracket-team-score">${homeScore}</span>
+      </div>
+      <div class="bracket-team${isTBD2 ? ' tbd' : ''}">
+        <span class="bracket-team-name"><span class="bracket-team-flag">${awayFlag}</span>${awayDisplay}</span>
+        <span class="bracket-team-score">${awayScore}</span>
+      </div>
+    </div>`;
+  });
 
-      html += `<div class="bracket-match">
-        <div class="bracket-match-info">${dateStr}<span>${m.venue}</span></div>
-        <div class="bracket-team ${isTBD1 ? 'tbd' : ''}">
-          <span class="bracket-team-name">${m.home}</span>
-          <span class="bracket-team-score">-</span>
-        </div>
-        <div class="bracket-team ${isTBD2 ? 'tbd' : ''}">
-          <span class="bracket-team-name">${m.away}</span>
-          <span class="bracket-team-score">-</span>
-        </div>
+  html += '</div></div>';
+  return html;
+}
+
+function renderBracketHalf(containerId, rounds) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let html = '';
+  rounds.forEach((round, ri) => {
+    round._ri = ri;
+    html += buildBracketRow(round, containerId.includes('upper') ? 'upper' : 'lower');
+    if (ri < rounds.length - 1) {
+      html += `<div class="bracket-connector">
+        <div class="bracket-connector-line"></div>
+        <span class="bracket-connector-arrow">▶</span>
+        <div class="bracket-connector-line"></div>
       </div>`;
-    });
-
-    html += '</div></div>';
-
-    // Connector arrow between rounds
-    if (ri < KO_ROUNDS.length - 1) {
-      html += `<div class="bracket-connector"><span style="color:#3a5070;font-size:1.2rem">▶</span></div>`;
     }
   });
 
-  // Champion trophy
+  // Champion
   html += `<div class="bracket-connector"><span style="color:#fdbb2d;font-size:1.2rem">▶</span></div>`;
   html += `<div class="bracket-final-wrap">
-    <div style="font-size:0.78rem;color:#8a9bb5;margin-bottom:10px;text-align:center;font-weight:700;">🏆 冠军</div>
+    <div style="font-size:0.72rem;color:#8a9bb5;margin-bottom:8px;font-weight:700;text-align:center;">🏆 冠军</div>
     <div class="bracket-champion">
       <div class="trophy">🏆</div>
       <div class="champ-label">2026 世界杯冠军</div>
@@ -958,8 +1263,27 @@ function renderBracket() {
     </div>
   </div>`;
 
-  html += '</div>';
-  container.innerHTML = html;
+  container.innerHTML = `<div class="bracket-row">${html}</div>`;
+}
+
+function renderBracket() {
+  renderBracketHalf('bracket-upper-container', KO_UPPER);
+  renderBracketHalf('bracket-lower-container', KO_LOWER);
+}
+
+// ===== BRACKET ZOOM =====
+let bracketZoom = 1.0;
+
+function zoomBracket(delta) {
+  if (delta === 0) {
+    bracketZoom = 1.0;
+  } else {
+    bracketZoom = Math.max(0.5, Math.min(2.0, bracketZoom + delta));
+  }
+  const inner = document.querySelector('.bracket-zoom-inner');
+  if (inner) inner.style.transform = `scale(${bracketZoom})`;
+  const level = document.getElementById('zoomLevel');
+  if (level) level.textContent = Math.round(bracketZoom * 100) + '%';
 }
 
 // ===== REFRESH =====

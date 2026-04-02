@@ -1,0 +1,29 @@
+{
+  "name": "2026世界杯完整赛程对阵图",
+  "short_name": "世界杯赛程",
+  "description": "2026 FIFA世界杯完整赛程、小组积分榜、实时比分与淘汰赛对阵图",
+  "start_url": "/worldcup2026",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "scope": "/worldcup2026/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230a0e1a' rx='80'/><text x='256' y='310' text-anchor='middle' font-size='280' font-weight='bold' fill='%23fdbb2d'>🏆</text><text x='256' y='430' text-anchor='middle' font-size='80' font-weight='bold' fill='%23fff'>2026</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230a0e1a' rx='30'/><text x='96' y='120' text-anchor='middle' font-size='100' font-weight='bold' fill='%23fdbb2d'>🏆</text><text x='96' y='165' text-anchor='middle' font-size='32' font-weight='bold' fill='%23fff'>2026</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}

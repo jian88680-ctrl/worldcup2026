@@ -6,6 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0e1a">
+<meta name="description" content="2026 FIFA世界杯完整赛程、小组积分榜、实时比分与淘汰赛对阵图 - 可离线使用">
+<link rel="manifest" href="manifest.json">
+<!-- PWA 图标 -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%230a0e1a' rx='10'/><text x='32' y='48' text-anchor='middle' font-size='40'>🏆</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%230a0e1a' rx='30'/><text x='90' y='130' text-anchor='middle' font-size='100' font-weight='bold' fill='%23fdbb2d'>🏆</text></svg>">
 <title>2026 FIFA 世界杯 · 完整赛程对阵图</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -276,9 +281,328 @@
   .section-title { font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px; }
   .section-title span { color: #fdbb2d; }
 
-  /* ===== KNOCKOUT BRACKET ===== */
-  .bracket-section { display: flex; flex-direction: column; gap: 24px; }
+  /* ===== KNOCKOUT BRACKET - CLASSIC TREE STYLE ===== */
+  .bracket-classic {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-x: auto;
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Three rows: Upper → Final, Final, Lower → Final */
+  .bracket-row-classic {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: max-content;
+  }
+  
+  /* Upper half (left side, moves right and up toward final) */
+  .bracket-upper-side {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+  }
+  
+  /* Lower half (left side, moves right and down toward final) */
+  .bracket-lower-side {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+  }
+  
+  /* Each round column */
+  .bracket-round-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .bracket-round-col-title {
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #8a9bb5;
+    white-space: nowrap;
+  }
+  
+  .bracket-round-col-title small {
+    display: block;
+    font-size: 0.62rem;
+    color: #556;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  
+  /* Match cards */
+  .bracket-matches-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 6px;
+  }
+  
+  .bracket-matches-col.gap-double {
+    gap: 24px;
+  }
+  
+  .bracket-matches-col.gap-quad {
+    gap: 56px;
+  }
+  
+  .bracket-matches-col.gap-final-top {
+    gap: 100px;
+    padding-top: 50px;
+  }
+  
+  .bracket-matches-col.gap-final-bottom {
+    gap: 100px;
+    padding-bottom: 50px;
+  }
+  
+  .bracket-match-card {
+    background: #111827;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 140px;
+    max-width: 160px;
+    transition: border-color 0.2s;
+  }
+  
+  .bracket-match-card:hover {
+    border-color: rgba(253,187,45,0.4);
+  }
+  
+  .bracket-match-card.live {
+    border-color: rgba(231,76,60,0.5);
+    box-shadow: 0 0 12px rgba(231,76,60,0.2);
+  }
+  
+  .bracket-match-card .match-id {
+    background: rgba(253,187,45,0.08);
+    padding: 2px 8px;
+    font-size: 0.6rem;
+    color: #556;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .bracket-match-card .team-line {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.78rem;
+  }
+  
+  .bracket-match-card .team-line:last-child {
+    border-bottom: none;
+  }
+  
+  .bracket-match-card .team-line .flag {
+    font-size: 0.9rem;
+  }
+  
+  .bracket-match-card .team-line .name {
+    flex: 1;
+    font-weight: 600;
+    color: #dde;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .bracket-match-card .team-line.tbd .name {
+    color: #556;
+    font-style: italic;
+    font-weight: 400;
+  }
+  
+  .bracket-match-card .team-line .score {
+    font-weight: 900;
+    color: #fdbb2d;
+    min-width: 16px;
+    text-align: center;
+  }
+  
+  /* Connector lines between rounds */
+  .bracket-connector-h {
+    width: 20px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  
+  .bracket-connector-h .hline {
+    position: absolute;
+    border-top: 2px solid rgba(255,255,255,0.2);
+  }
+  
+  .bracket-connector-h .hline.top {
+    top: 50%;
+    left: 0;
+    right: 0;
+  }
+  
+  .bracket-connector-h .hline.mid {
+    top: 50%;
+    width: 100%;
+  }
+  
+  .bracket-connector-h .vline {
+    position: absolute;
+    border-left: 2px solid rgba(255,255,255,0.2);
+  }
+  
+  /* Final section - center */
+  .bracket-final-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 0 10px;
+  }
+  
+  .bracket-final-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .bracket-final-card {
+    background: linear-gradient(135deg, rgba(253,187,45,0.15), rgba(253,187,45,0.05));
+    border: 2px solid rgba(253,187,45,0.5);
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 180px;
+    text-align: center;
+  }
+  
+  .bracket-final-card .final-label {
+    background: rgba(253,187,45,0.2);
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fdbb2d;
+  }
+  
+  .bracket-final-card .final-date {
+    padding: 3px 12px;
+    font-size: 0.65rem;
+    color: #8a9bb5;
+    background: rgba(255,255,255,0.03);
+  }
+  
+  .bracket-final-card .team-line {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    border-bottom: 1px solid rgba(253,187,45,0.2);
+    font-size: 0.88rem;
+  }
+  
+  .bracket-final-card .team-line:last-child {
+    border-bottom: none;
+  }
+  
+  .bracket-final-card .team-line .flag {
+    font-size: 1.1rem;
+  }
+  
+  .bracket-final-card .team-line .name {
+    flex: 1;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  .bracket-final-card .team-line .score {
+    font-weight: 900;
+    color: #fdbb2d;
+    font-size: 1rem;
+  }
+  
+  .bracket-final-card .team-line.tbd .name {
+    color: #556;
+    font-style: italic;
+  }
+  
+  .bracket-final-card .team-line.winner {
+    background: rgba(253,187,45,0.1);
+  }
+  
+  /* Champion section */
+  .bracket-champion-section {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .bracket-champion-card {
+    background: linear-gradient(135deg, rgba(253,187,45,0.2), rgba(253,187,45,0.08));
+    border: 2px solid rgba(253,187,45,0.6);
+    border-radius: 16px;
+    padding: 16px 24px;
+    display: inline-block;
+  }
+  
+  .bracket-champion-card .trophy {
+    font-size: 2.5rem;
+    margin-bottom: 6px;
+  }
+  
+  .bracket-champion-card .champ-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fdbb2d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .bracket-champion-card .champ-team {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 4px;
+  }
+  
+  /* 3rd place match */
+  .bracket-third-place {
+    margin-top: 16px;
+    text-align: center;
+  }
+  
+  .bracket-third-card {
+    background: rgba(139,90,43,0.15);
+    border: 1px solid rgba(139,90,43,0.4);
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: inline-block;
+  }
+  
+  .bracket-third-card .third-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #cd7f32;
+    margin-bottom: 4px;
+  }
+  
+  .bracket-third-card .team-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    padding: 3px 0;
+  }
+  
+  .bracket-third-card .team-line .flag { font-size: 0.9rem; }
+  .bracket-third-card .team-line .name { font-weight: 600; color: #dde; }
+  .bracket-third-card .team-line .score { color: #cd7f32; font-weight: 700; }
 
+  /* Zoom controls */
   .bracket-zoom-controls {
     display: flex;
     align-items: center;
@@ -868,20 +1192,10 @@
     <button class="zoom-btn" onclick="zoomBracket(0)" title="重置" style="font-size:0.75rem">⟳</button>
   </div>
 
-  <div class="bracket-section" id="bracketSection">
-    <!-- Upper Half -->
-    <div class="bracket-half" id="bracket-upper">
-      <div class="bracket-half-label">🌐 上半区 <span style="font-size:0.68rem;color:#556;font-weight:400">(A–H 组晋级)</span></div>
-      <div class="bracket-half-inner">
-        <div id="bracket-upper-container"></div>
-      </div>
-    </div>
-    <!-- Lower Half -->
-    <div class="bracket-half" id="bracket-lower">
-      <div class="bracket-half-label">🌑 下半区 <span style="font-size:0.68rem;color:#556;font-weight:400">(I–L 组晋级)</span></div>
-      <div class="bracket-half-inner">
-        <div id="bracket-lower-container"></div>
-      </div>
+  <div class="bracket-zoom-wrap" id="bracketZoomWrap">
+    <div class="bracket-zoom-inner" id="bracketZoomInner">
+      <!-- Classic Tree Bracket -->
+      <div class="bracket-classic" id="bracketClassic"></div>
     </div>
   </div>
 
@@ -1378,38 +1692,161 @@ function buildBracketRow(round, koSide) {
   return html;
 }
 
-function renderBracketHalf(containerId, rounds) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  let html = '';
-  rounds.forEach((round, ri) => {
-    round._ri = ri;
-    html += buildBracketRow(round, containerId.includes('upper') ? 'upper' : 'lower');
-    if (ri < rounds.length - 1) {
-      html += `<div class="bracket-connector">
-        <div class="bracket-connector-line"></div>
-        <span class="bracket-connector-arrow">▶</span>
-        <div class="bracket-connector-line"></div>
-      </div>`;
-    }
-  });
+// ===== CLASSIC TREE BRACKET RENDERER =====
+function buildClassicMatch(m) {
+  const s = koResults[m.id];
+  const isLive = s && s.status === 'live';
+  const homeDisplay = s && s.home ? s.home : m.home;
+  const awayDisplay = s && s.away ? s.away : m.away;
+  const homeFlag = s && s.homeFlag ? s.homeFlag : (m.homeFlag || '🏳️');
+  const awayFlag = s && s.awayFlag ? s.awayFlag : (m.awayFlag || '🏳️');
+  const homeScore = s && s.homeScore !== undefined ? s.homeScore : '-';
+  const awayScore = s && s.awayScore !== undefined ? s.awayScore : '-';
+  const isTBD = m.home.includes('待定') || m.home.includes('胜者') || m.home.includes('第');
+  const isTBD2 = m.away.includes('待定') || m.away.includes('胜者') || m.away.includes('第');
 
-  html += `<div class="bracket-connector"><span style="color:#fdbb2d;font-size:1.1rem">▶</span></div>`;
-  html += `<div class="bracket-final-wrap">
-    <div style="font-size:0.7rem;color:#8a9bb5;margin-bottom:6px;font-weight:700;text-align:center;">🏆 冠军</div>
-    <div class="bracket-champion">
-      <div class="trophy">🏆</div>
-      <div class="champ-label">2026 世界杯冠军</div>
-      <div class="champ-team" style="color:#fdbb2d88;font-style:italic">待定</div>
-    </div>
+  return `<div class="bracket-match-card${isLive ? ' live' : ''}">
+    <div class="match-id"><span>${m.id}</span><span>${m.venue || ''}</span></div>
+    <div class="team-line${isTBD ? ' tbd' : ''}"><span class="flag">${homeFlag}</span><span class="name">${homeDisplay}</span><span class="score">${homeScore}</span></div>
+    <div class="team-line${isTBD2 ? ' tbd' : ''}"><span class="flag">${awayFlag}</span><span class="name">${awayDisplay}</span><span class="score">${awayScore}</span></div>
   </div>`;
-
-  container.innerHTML = `<div class="bracket-row">${html}</div>`;
 }
 
 function renderBracket() {
-  renderBracketHalf('bracket-upper-container', KO_UPPER);
-  renderBracketHalf('bracket-lower-container', KO_LOWER);
+  const container = document.getElementById('bracketClassic');
+  if (!container) return;
+
+  // Classic tree bracket structure
+  // Left: Upper half (A-H) → converges to center
+  // Right: Lower half (I-L) → converges to center
+  // Center: Final and Champion
+
+  const html = `
+<div style="display:flex;align-items:center;gap:0;min-width:1200px;">
+
+  <!-- LEFT SIDE: Upper Half (A-H groups) -->
+  <div style="display:flex;align-items:center;gap:0;">
+
+    <!-- Round of 16: Upper -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title">⚔️ 32强赛<br><small>A/B/C/D组</small></div>
+      <div class="bracket-matches-col" style="gap:8px;padding-top:0;">
+        ${KO_UPPER[0].matches.map(m => buildClassicMatch(m)).join('')}
+      </div>
+    </div>
+
+    <!-- Connector Right -->
+    <div class="bracket-connector-h" style="width:24px;"><div style="position:relative;height:100%;"><div style="position:absolute;top:25%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:50%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:75%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:12.5%;right:0;height:75%;border-left:2px solid rgba(255,255,255,0.25);"></div></div></div>
+
+    <!-- Round of 16: Lower (E/F/G/H groups) -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title">⚔️ 32强赛<br><small>E/F/G/H组</small></div>
+      <div class="bracket-matches-col" style="gap:8px;padding-top:100px;">
+        ${KO_LOWER[0].matches.map(m => buildClassicMatch(m)).join('')}
+      </div>
+    </div>
+
+    <!-- Connector Right -->
+    <div class="bracket-connector-h" style="width:24px;"><div style="position:relative;height:100%;"><div style="position:absolute;top:25%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:50%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:75%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:50%;left:0;height:50%;border-left:2px solid rgba(255,255,255,0.25);"></div></div></div>
+
+    <!-- Quarterfinals: 4 matches -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title">🎯 16强<br><small>7/4</small></div>
+      <div class="bracket-matches-col" style="gap:48px;padding-top:50px;">
+        <div class="bracket-match-card${koResults['R16U1']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>49</span><span>洛杉矶</span></div>
+          <div class="team-line${KO_UPPER[1].matches[0].home.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_UPPER[1].matches[0].homeFlag || '🏳️'}</span><span class="name">${KO_UPPER[1].matches[0].home}</span><span class="score">-</span></div>
+          <div class="team-line${KO_UPPER[1].matches[0].away.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_UPPER[1].matches[0].awayFlag || '🏳️'}</span><span class="name">${KO_UPPER[1].matches[0].away}</span><span class="score">-</span></div>
+        </div>
+        <div class="bracket-match-card${koResults['R16U2']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>50</span><span>洛杉矶</span></div>
+          <div class="team-line${KO_UPPER[1].matches[1].home.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_UPPER[1].matches[1].homeFlag || '🏳️'}</span><span class="name">${KO_UPPER[1].matches[1].home}</span><span class="score">-</span></div>
+          <div class="team-line${KO_UPPER[1].matches[1].away.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_UPPER[1].matches[1].awayFlag || '🏳️'}</span><span class="name">${KO_UPPER[1].matches[1].away}</span><span class="score">-</span></div>
+        </div>
+        <div class="bracket-match-card${koResults['R16L1']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>51</span><span>迈阿密</span></div>
+          <div class="team-line${KO_LOWER[1].matches[0].home.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_LOWER[1].matches[0].homeFlag || '🏳️'}</span><span class="name">${KO_LOWER[1].matches[0].home}</span><span class="score">-</span></div>
+          <div class="team-line${KO_LOWER[1].matches[0].away.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_LOWER[1].matches[0].awayFlag || '🏳️'}</span><span class="name">${KO_LOWER[1].matches[0].away}</span><span class="score">-</span></div>
+        </div>
+        <div class="bracket-match-card${koResults['R16L2']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>52</span><span>迈阿密</span></div>
+          <div class="team-line${KO_LOWER[1].matches[1].home.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_LOWER[1].matches[1].homeFlag || '🏳️'}</span><span class="name">${KO_LOWER[1].matches[1].home}</span><span class="score">-</span></div>
+          <div class="team-line${KO_LOWER[1].matches[1].away.includes('胜者') ? ' tbd' : ''}"><span class="flag">${KO_LOWER[1].matches[1].awayFlag || '🏳️'}</span><span class="name">${KO_LOWER[1].matches[1].away}</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connector Right -->
+    <div class="bracket-connector-h" style="width:24px;"><div style="position:relative;height:100%;"><div style="position:absolute;top:37.5%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:62.5%;left:0;right:0;border-top:2px solid rgba(255,255,255,0.25);"></div><div style="position:absolute;top:50%;left:0;height:25%;border-left:2px solid rgba(255,255,255,0.25);"></div></div></div>
+
+    <!-- Semifinals: 2 matches -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title">🏅 1/4决赛<br><small>7/9-7/12</small></div>
+      <div class="bracket-matches-col" style="gap:90px;padding-top:75px;">
+        <div class="bracket-match-card${koResults['QFU1']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>53</span><span>纽约</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强胜者1</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强胜者2</span><span class="score">-</span></div>
+        </div>
+        <div class="bracket-match-card${koResults['QFL1']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>54</span><span>达拉斯</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强胜者3</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">16强胜者4</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connector Right -->
+    <div class="bracket-connector-h" style="width:24px;"><div style="position:relative;height:100%;"><div style="position:absolute;top:50%;left:0;right:0;border-top:2px solid rgba(253,187,45,0.5);"></div></div></div>
+
+    <!-- Semi-Finals: Upper vs Lower -->
+    <div class="bracket-round-col">
+      <div class="bracket-round-col-title">🔥 半决赛<br><small>7/14-7/15</small></div>
+      <div class="bracket-matches-col" style="gap:180px;padding-top:112px;">
+        <div class="bracket-match-card${koResults['SFU1']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>55</span><span>纽约</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">1/4胜者1</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">待定</span><span class="score">-</span></div>
+        </div>
+        <div class="bracket-match-card${koResults['SFL1']?.status === 'live' ? ' live' : ''}">
+          <div class="match-id"><span>56</span><span>洛杉矶</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">1/4胜者2</span><span class="score">-</span></div>
+          <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">待定</span><span class="score">-</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CENTER: Final -->
+  <div class="bracket-final-section">
+    <div style="height:112px;display:flex;align-items:center;justify-content:center;">
+      <div style="width:20px;border-top:2px solid rgba(253,187,45,0.5);"></div>
+    </div>
+    <div class="bracket-final-card">
+      <div class="final-label">🏆 决赛</div>
+      <div class="final-date">7月19日 · 纽约大都会</div>
+      <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">上半区胜者</span><span class="score">-</span></div>
+      <div class="team-line tbd"><span class="flag">🏳️</span><span class="name">下半区胜者</span><span class="score">-</span></div>
+    </div>
+    <div style="height:20px;display:flex;align-items:center;justify-content:center;">
+      <div style="width:20px;border-top:2px solid rgba(253,187,45,0.5);"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE: Champion -->
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 16px;min-width:140px;">
+    <div class="bracket-champion-card">
+      <div class="trophy">🏆</div>
+      <div class="champ-label">2026 冠军</div>
+      <div class="champ-team" style="color:#fdbb2d88;font-style:italic;">待定</div>
+    </div>
+  </div>
+
+</div>
+  `;
+
+  container.innerHTML = html;
 }
 
 // ===== BRACKET ZOOM =====
@@ -1440,6 +1877,78 @@ function init() {
 }
 
 init();
+
+// ===== PWA Service Worker 注册 =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+      console.log('[App] SW registered:', reg.scope);
+      
+      // 检查更新
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // 发现新版本，提示用户刷新
+            showUpdateToast();
+          }
+        });
+      });
+      
+      // 离线状态监听
+      window.addEventListener('offline', () => showOfflineToast());
+      window.addEventListener('online', () => hideOfflineToast());
+      
+    } catch (err) {
+      console.log('[App] SW registration failed:', err);
+    }
+  });
+}
+
+// 更新提示
+function showUpdateToast() {
+  let toast = document.getElementById('pwa-update-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'pwa-update-toast';
+    toast.innerHTML = `<span>🔄 发现新版本</span><button onclick="location.reload()">刷新</button>`;
+    toast.style.cssText = `
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #fdbb2d, #e67e22); color: #000;
+      padding: 12px 20px; border-radius: 25px; font-size: 14px; font-weight: 600;
+      display: flex; align-items: center; gap: 10px; z-index: 10000;
+      box-shadow: 0 4px 15px rgba(253,187,45,0.4);
+    `;
+    toast.querySelector('button').style.cssText = `
+      background: rgba(0,0,0,0.2); border: none; color: #000;
+      padding: 5px 12px; border-radius: 15px; cursor: pointer; font-weight: 700;
+    `;
+    document.body.appendChild(toast);
+  }
+}
+
+// 离线提示
+function showOfflineToast() {
+  let toast = document.getElementById('pwa-offline-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'pwa-offline-toast';
+    toast.innerHTML = `📴 当前处于离线模式`;
+    toast.style.cssText = `
+      position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(231,76,60,0.95); color: #fff;
+      padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      z-index: 10000; box-shadow: 0 2px 10px rgba(231,76,60,0.3);
+    `;
+    document.body.appendChild(toast);
+  }
+}
+
+function hideOfflineToast() {
+  const toast = document.getElementById('pwa-offline-toast');
+  if (toast) toast.remove();
+}
 </script>
 </body>
 </html>

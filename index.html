@@ -1248,8 +1248,8 @@ const MATCHES = [
   {id:'R102',sortKey:202607180700,date:'7月18日',weekday:'周六',dateNum:20260718,time:'07:00',group:'3rd',home:'R99负',away:'R100负',venue:'亚特兰大'},
 
   // ===== 决赛 =====
-  {id:'R103',sortKey:202607190300,date:'7月19日',weekday:'周日',dateNum:20260719,time:'03:00',group:'F',home:'R97胜',away:'R98胜',venue:'纽约'},
-  {id:'R104',sortKey:202607190700,date:'7月19日',weekday:'周日',dateNum:20260719,time:'07:00',group:'F',home:'R99胜',away:'R100胜',venue:'纽约大都会'}
+  {id:'R103',sortKey:202607190300,date:'7月19日',weekday:'周日',dateNum:20260719,time:'03:00',group:'Final',home:'R97胜',away:'R98胜',venue:'纽约'},
+  {id:'R104',sortKey:202607190700,date:'7月19日',weekday:'周日',dateNum:20260719,time:'07:00',group:'Final',home:'R99胜',away:'R100胜',venue:'纽约大都会'}
 ];
 
 // ===== KNOCKOUT DATA (自动从积分榜更新) =====
@@ -1686,7 +1686,7 @@ function renderScheduleGroup() {
   const groupOrder = {
     'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6,
     'G': 7, 'H': 8, 'I': 9, 'J': 10, 'K': 11, 'L': 12,
-    'R32': 13, 'R16': 14, 'QF': 15, 'SF': 16, '3rd': 17, 'F': 18
+    'R32': 13, 'R16': 14, 'QF': 15, 'SF': 16, '3rd': 17, 'Final': 18
   };
   
   const sorted = [...MATCHES].sort((a, b) => {
@@ -1701,7 +1701,17 @@ function renderScheduleGroup() {
     if (m.group !== lastGroup) {
       const headerRow = document.createElement('tr');
       headerRow.className = 'date-group-header';
-      headerRow.innerHTML = `<td colspan="6">⚽ ${m.group} 组</td>`;
+      // 淘汰赛显示专门名称
+      const groupNames = {
+        'R32': '⚔️ 32强赛',
+        'R16': '🎯 16强赛',
+        'QF': '🏅 8强赛',
+        'SF': '🔥 半决赛',
+        '3rd': '🥉 季军赛',
+        'Final': '🏆 决赛'
+      };
+      const groupName = groupNames[m.group] || `⚽ ${m.group} 组`;
+      headerRow.innerHTML = `<td colspan="6">${groupName}</td>`;
       tbody.appendChild(headerRow);
       lastGroup = m.group;
     }

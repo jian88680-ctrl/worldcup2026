@@ -1243,13 +1243,14 @@ const MATCHES = [
   {id:'R99',sortKey:202607150300,date:'7月15日',weekday:'周三',dateNum:20260715,time:'03:00',group:'SF',home:'R93胜',away:'R94胜',venue:'洛杉矶'},
   {id:'R100',sortKey:202607150700,date:'7月15日',weekday:'周三',dateNum:20260715,time:'07:00',group:'SF',home:'R95胜',away:'R96胜',venue:'旧金山'},
 
-  // ===== 季军赛 =====
-  {id:'R101',sortKey:202607180300,date:'7月18日',weekday:'周六',dateNum:20260718,time:'03:00',group:'3rd',home:'R97负',away:'R98负',venue:'迈阿密'},
-  {id:'R102',sortKey:202607180700,date:'7月18日',weekday:'周六',dateNum:20260718,time:'07:00',group:'3rd',home:'R99负',away:'R100负',venue:'亚特兰大'},
+  // ===== 季军赛（1场）=====
+  // 半决赛：上半区(R97/R98) 各出1负，下半区(R99/R100) 各出1负，共4负取2打季军
+  // 实际上2026世界杯只有1场季军赛：上半区负者 vs 下半区负者
+  {id:'R101',sortKey:202607180300,date:'7月18日',weekday:'周六',dateNum:20260718,time:'03:00',group:'3rd',home:'SF上半区负者',away:'SF下半区负者',venue:'迈阿密'},
 
-  // ===== 决赛 =====
-  {id:'R103',sortKey:202607190300,date:'7月19日',weekday:'周日',dateNum:20260719,time:'03:00',group:'Final',home:'R97胜',away:'R98胜',venue:'纽约'},
-  {id:'R104',sortKey:202607190700,date:'7月19日',weekday:'周日',dateNum:20260719,time:'07:00',group:'Final',home:'R99胜',away:'R100胜',venue:'纽约大都会'}
+  // ===== 决赛（1场）=====
+  // 上半区胜者 vs 下半区胜者
+  {id:'R103',sortKey:202607190300,date:'7月19日',weekday:'周日',dateNum:20260719,time:'03:00',group:'Final',home:'SF上半区胜者',away:'SF下半区胜者',venue:'纽约大都会'}
 ];
 
 // ===== KNOCKOUT DATA (自动从积分榜更新) =====

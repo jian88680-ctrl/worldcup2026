@@ -1,12 +1,11 @@
 // Service Worker for 2026 World Cup Schedule PWA
-const CACHE_NAME = 'worldcup2026-v1.0.0';
+const CACHE_NAME = 'worldcup2026-v1.1.0';
 const OFFLINE_URL = '/worldcup2026/offline.html';
 
 // 需要缓存的资源
 const STATIC_ASSETS = [
   '/worldcup2026/',
   '/worldcup2026/index.html',
-  '/worldcup2026/worldcup2026.html',
   '/worldcup2026/manifest.json'
 ];
 
@@ -14,7 +13,6 @@ const STATIC_ASSETS = [
 const PRECACHE_URLS = [
   './',
   './index.html',
-  './worldcup2026.html',
   './manifest.json'
 ];
 

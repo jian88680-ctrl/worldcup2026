@@ -6,6 +6,9 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch:  # 支持手动触发
 
+permissions:
+  contents: write
+
 jobs:
   update-scores:
     runs-on: ubuntu-latest
@@ -17,15 +20,34 @@ jobs:
         env:
           WC2026_API_KEY: ${{ secrets.WC2026_API_KEY }}
         run: |
-          echo "Fetching scores..."
-          # 如果配置了API Key，调用真实API
-          if [ -n "$WC2026_API_KEY" ]; then
-            curl -s -H "Authorization: $WC2026_API_KEY" \
-              "https://api.wc2026api.com/matches" \
-              -o scores.json
-          else
-            echo "{}" > scores.json
+          set -e
+          echo "Fetching scores from wc2026api..."
+          
+          API_KEY="$WC2026_API_KEY"
+          # 如果 GitHub Secret 未设置，使用内置 API Key 作为后备
+          if [ -z "$API_KEY" ]; then
+            API_KEY="wc26_3oEb6vWz95cB3oJU7F669M"
           fi
+          
+          # 调用主 API（注意必须带 Bearer 前缀）
+          HTTP_CODE=$(curl -f -s -o scores.json -w "%{http_code}" \
+            -H "Authorization: Bearer $API_KEY" \
+            "https://api.wc2026api.com/matches" || echo "400")
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Primary API failed (HTTP $HTTP_CODE), trying fallback..."
+            # 备用数据源：worldcup26.ir（免费，无需 Key）
+            curl -f -s -o scores.json "https://worldcup26.ir/get/games" || true
+          fi
+          
+          # 校验 JSON 合法性
+          if ! python3 -c "import json; json.load(open('scores.json'))" 2>/dev/null; then
+            echo "Invalid JSON response, creating empty scores"
+            echo '{"scores":{}}' > scores.json
+          fi
+          
+          echo "Scores file preview:"
+          cat scores.json | head -c 500
 
       - name: Upload scores file
         run: |
